@@ -1,5 +1,7 @@
-1.3.9 (unreleased)
+1.3.9 (2014-02-03)
 ------------------------
+* Change: avoid dependency on Zope's DateTime, use datetime instead
+  [tiberich, alex morega]
 
 1.3.8 (2013-12-04)
 ------------------------
