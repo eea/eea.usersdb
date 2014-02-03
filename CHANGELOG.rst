@@ -1,3 +1,6 @@
+1.3.10 (unreleased)
+------------------------
+
 1.3.9 (2014-02-03)
 ------------------------
 * Change: avoid dependency on Zope's DateTime, use datetime instead
