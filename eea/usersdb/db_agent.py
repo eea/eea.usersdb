@@ -1,9 +1,6 @@
-from DateTime import DateTime
 from _backport import wraps
 from datetime import datetime
-from naaya.ldapdump.interfaces import IDumpReader
 from string import ascii_lowercase, digits, ascii_letters
-from zope.component import getUtility
 import json
 import ldap
 import ldap.filter
@@ -910,9 +907,13 @@ class UsersDB(object):
         if not data:
             data = {}
         old_records = self._get_metadata(user_id)
+        utc_now = datetime.utcnow().replace(microsecond=0)
+        timestamp = utc_now.isoformat()
+        if '+' not in timestamp:
+            timestamp += '+00:00'
         record = {
             'action': record_type,
-            'timestamp': DateTime().ISO8601(),
+            'timestamp': timestamp,
             'author': self._author,
             'data': data
         }
@@ -1852,4 +1853,6 @@ class UsersDB(object):
         It uses the sqlite dump to achive this.
         """
 
+        from zope.component import getUtility
+        from naaya.ldapdump.interfaces import IDumpReader
         return getUtility(IDumpReader).get_dump()
