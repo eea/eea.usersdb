@@ -16,6 +16,9 @@ DISABLE_ACCOUNT = "DISABLE_ACCOUNT"
 ADD_TO_ORG = "ADD_TO_ORG"
 REMOVED_FROM_ORG = "REMOVED_FROM_ORG"
 
+ADD_PENDING_TO_ORG = "ADD_PENDING_TO_ORG"
+REMOVED_PENDING_FROM_ORG = "REMOVED_PENDING_FROM_ORG"
+
 ADDED_TO_ROLE = "ADDED_TO_ROLE"
 REMOVED_FROM_ROLE = "REMOVED_FROM_ROLE"
 
@@ -546,6 +549,19 @@ class UsersDB(object):
         return user_info
 
     @log_ldap_exceptions
+    def pending_membership(self, user_id):
+        """
+        Returns a list or organisation ids for which member is pending membership
+        """
+        user_dn = self._user_dn(user_id)
+        query_filter = ldap.filter.filter_format(
+            '(&(objectClass=organizationGroup)(pendingUniqueMember=%s))', (user_dn,))
+
+        result = self.conn.search_s(self._org_dn_suffix, ldap.SCOPE_ONELEVEL,
+                                    filterstr=query_filter, attrlist=())
+        return [self._org_id(dn) for dn, attr in result]
+
+    @log_ldap_exceptions
     def org_info(self, org_id):
         """
         Returns a dictionary of organisation information for `org_id`.
@@ -1055,6 +1071,49 @@ class UsersDB(object):
         assert len(result) == 1
         dn, attr = result[0]
         return [self._user_id(d) for d in attr['uniqueMember'] if d != '']
+
+    @log_ldap_exceptions
+    def pending_members_in_org(self, org_id):
+        query_dn = self._org_dn(org_id)
+        result = self.conn.search_s(query_dn, ldap.SCOPE_BASE,
+                                    attrlist=('pendingUniqueMember',))
+        assert len(result) == 1
+        dn, attr = result[0]
+        #import pdb; pdb.set_trace()
+        return [self._user_id(d) for d in attr.get('pendingUniqueMember', []) if d != '']
+
+    @log_ldap_exceptions
+    def add_pending_to_org(self, org_id, user_id_list):
+        assert self._bound, "call `perform_bind` before `add_to_org`"
+        log.info("Adding users %r to organisation %r", user_id_list, org_id)
+
+        # record this change in the user's log
+        for user in user_id_list:
+            self.add_change_record(user, ADD_PENDING_TO_ORG, {'organisation': org_id})
+
+        user_dn_list = [self._user_dn(user_id) for user_id in user_id_list]
+        changes = ((ldap.MOD_ADD, 'pendingUniqueMember', user_dn_list), )
+
+        result = self.conn.modify_s(self._org_dn(org_id), changes)
+        assert result == (ldap.RES_MODIFY, [])
+
+    @log_ldap_exceptions
+    def remove_pending_from_org(self, org_id, user_id_list):
+        assert self._bound, "call `perform_bind` before `remove_from_org`"
+        log.info("Removing users %r from organisation %r",
+                 user_id_list, org_id)
+
+        # record this change in the user's log
+        for user in user_id_list:
+            self.add_change_record(user, REMOVED_PENDING_FROM_ORG, {
+                'organisation': org_id,
+            })
+
+        user_dn_list = [self._user_dn(user_id) for user_id in user_id_list]
+        changes = ((ldap.MOD_DELETE, 'pendingUniqueMember', user_dn_list), )
+
+        result = self.conn.modify_s(self._org_dn(org_id), changes)
+        assert result == (ldap.RES_MODIFY, [])
 
     @log_ldap_exceptions
     def add_to_org(self, org_id, user_id_list):

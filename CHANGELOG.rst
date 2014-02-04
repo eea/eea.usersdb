@@ -1,5 +1,7 @@
 1.3.10 (unreleased)
 ------------------------
+* Feature WIP: added support for pending membership to organisations
+  [tiberich #15263]
 
 1.3.9 (2014-02-03)
 ------------------------
