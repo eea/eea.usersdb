@@ -140,6 +140,11 @@ def log_ldap_exceptions(func):
             raise
     return wrapper
 
+import ldap.resiter
+
+class StreamingLDAPObject(ldap.ldapobject.LDAPObject, ldap.resiter.ResultProcessor):
+    pass
+
 
 class UsersDB(object):
     user_schema = EIONET_USER_SCHEMA
@@ -162,7 +167,8 @@ class UsersDB(object):
 
     @log_ldap_exceptions
     def connect(self, server):
-        conn = ldap.initialize('ldap://' + server)
+        conn = StreamingLDAPObject('ldap://' + server)
+        #conn = ldap.initialize('ldap://' + server)
         conn.protocol_version = ldap.VERSION3
         conn.timeout = LDAP_TIMEOUT
         return conn
@@ -309,7 +315,7 @@ class UsersDB(object):
             if ldap_name in attr:
                 if ldap_name.endswith('Timestamp'):
                     try:
-                        out[name] = datetime.strptime(attr[ldap_name][0],
+                        out[name] = datetime.strptime(attr[ldap_name][0][:14] + "Z",
                                                       '%Y%m%d%H%M%SZ')
                     except ValueError:
                         out[name] = attr[ldap_name][0]

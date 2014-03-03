@@ -2,6 +2,11 @@
 ------------------------
 * Feature WIP: added support for pending membership to organisations
   [tiberich #15263]
+* Bug fix: properly parse timestamps when format contains microseconds
+  [tiberich #18676]
+* Feature: allow using streaming methods to get the results from ldap,
+  for large result sets
+  [tiberich #18676]
 
 1.3.9 (2014-02-03)
 ------------------------
