@@ -1,6 +1,6 @@
-1.3.10 (unreleased)
+1.3.10 (2014-03-12)
 ------------------------
-* Feature WIP: added support for pending membership to organisations
+* Feature: added support for pending membership to organisations
   [tiberich #15263]
 * Bug fix: properly parse timestamps when format contains microseconds
   [tiberich #18676]
