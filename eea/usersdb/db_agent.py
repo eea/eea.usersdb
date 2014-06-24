@@ -126,6 +126,9 @@ class NameAlreadyExists(Exception):
 class OrgRenameError(Exception):
     pass
 
+class RoleRenameError(Exception):
+    pass
+
 editable_user_fields = sorted(set(EIONET_USER_SCHEMA) - set(['full_name']))
 editable_org_fields = list(EIONET_ORG_SCHEMA)  # TODO + ['organisation_links']
 
@@ -1236,6 +1239,45 @@ class UsersDB(object):
                              % role_dn)
 
         assert result == (ldap.RES_ADD, [])
+
+    def merge_roles(self, role_source, role_destination):
+        subroles = self._sub_roles(role_source)
+        for subrole in subroles:
+            subrole = self._role_id(subrole)
+            new_role_id = subrole.replace(role_source, role_destination)
+            self.rename_role(subrole, new_role_id)
+
+    @log_ldap_exceptions
+    def rename_role(self, role_id, new_role_id):
+        assert self._bound, "call `perform_bind` before `rename_role`"
+        log.info("Renaming role %r to %r", role_id, new_role_id)
+
+        role_dn = self._role_dn(role_id)
+        new_role_dn = self._role_dn(new_role_id)
+
+        try:
+            result = self.conn.rename_s(role_dn, new_role_dn.split(',')[0])
+        except ldap.ALREADY_EXISTS:
+            raise NameAlreadyExists("Role %r already exists" %
+                                    new_role_id)
+        assert result[:2] == (ldap.RES_MODRDN, [])
+
+        try:
+            fil = ldap.filter.filter_format('(uniqueMember=%s)', (role_dn,))
+            result = self.conn.search_s(self._role_dn_suffix,
+                                        ldap.SCOPE_SUBTREE,
+                                        filterstr=fil, attrlist=())
+            for role_dn, attr in result:
+                mod_result = self.conn.modify_s(role_dn, (
+                    (ldap.MOD_DELETE, 'uniqueMember', [role_dn]),
+                    (ldap.MOD_ADD, 'uniqueMember', [new_role_dn]),
+                ))
+                assert mod_result == (ldap.RES_MODIFY, [])
+        except:
+            msg = ("Error while updating references to role "
+                   "from %r to %r" % (role_dn, new_role_dn))
+            log.exception(msg)
+            raise RoleRenameError(msg)
 
     @log_ldap_exceptions
     def set_role_description(self, role_id, description):
