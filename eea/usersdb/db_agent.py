@@ -1241,11 +1241,46 @@ class UsersDB(object):
         assert result == (ldap.RES_ADD, [])
 
     def merge_roles(self, role_source, role_destination):
-        subroles = self._sub_roles(role_source)
-        for subrole in subroles:
-            subrole = self._role_id(subrole)
-            new_role_id = subrole.replace(role_source, role_destination)
-            self.rename_role(subrole, new_role_id)
+        subroles = sorted(self._sub_roles(role_source))
+
+        # 1. create new role at the proper location
+        # 2. copy the properties from the old role
+        # 3. delete the old role (reversed direction)
+
+        blacklist = ['objectClass', 'description', 'cn', 'ou']
+        for subrole_dn in subroles:
+            subrole_id = self._role_id(subrole_dn)
+            dn, role_info = self.conn.search_s(subrole_dn, ldap.SCOPE_BASE)[0]
+            description = role_info['description']
+
+            new_role_id = str(subrole_id.replace(role_source,
+                                                 role_destination))
+
+            try:
+                self.create_role(new_role_id, description[0])
+            except ValueError:  #might already exist
+                pass
+
+            role_dn = self._role_dn(new_role_id)
+
+            dn, attrs = self.conn.search_s(role_dn, ldap.SCOPE_BASE)[0]
+
+            for k, v in role_info.items():
+                if k in blacklist:
+                    continue
+
+                if k in attrs:
+                    diff = list(set(v).difference(set(attrs[k])))
+                else:
+                    diff = v
+
+                if diff:
+                    self.conn.modify_s(role_dn, (
+                        (ldap.MOD_ADD, k, diff),
+                    ))
+
+        for subrole in reversed(subroles):
+            self.delete_role(self._role_id(subrole))
 
     def prefill_roles_from(self, role_destination, role_source):
         subroles = self._sub_roles(role_source)
