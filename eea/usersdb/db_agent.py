@@ -1247,6 +1247,13 @@ class UsersDB(object):
             new_role_id = subrole.replace(role_source, role_destination)
             self.rename_role(subrole, new_role_id)
 
+    def prefill_roles_from(self, role_destination, role_source):
+        subroles = self._sub_roles(role_source)
+        for subrole in subroles:
+            subrole = self._role_id(subrole)
+            new_role_id = subrole.replace(role_source, role_destination)
+            self.create_role(new_role_id, description="")
+
     @log_ldap_exceptions
     def rename_role(self, role_id, new_role_id):
         assert self._bound, "call `perform_bind` before `rename_role`"
