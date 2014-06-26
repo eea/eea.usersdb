@@ -1,3 +1,8 @@
+1.3.11 (2014-06-26)
+------------------------
+* Feature: added the possibilty to perform merge roles, prefill roles
+  [tiberich #20140]
+
 1.3.10 (2014-03-12)
 ------------------------
 * Feature: added support for pending membership to organisations
