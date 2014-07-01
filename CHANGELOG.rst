@@ -1,3 +1,6 @@
+1.3.13 (unreleased)
+------------------------
+
 1.3.12 (2014-07-01)
 ------------------------
 * Feature: added the org_exists API method to avoid clogging logs with
