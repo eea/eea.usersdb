@@ -1124,6 +1124,15 @@ class UsersDB(object):
         result = self.conn.modify_s(self._org_dn(org_id), changes)
         assert result == (ldap.RES_MODIFY, [])
 
+    def org_exists(self, org_id):
+        # return True if the org_id exists as a valid Organisation in LDAP
+        query_dn = self._org_dn(org_id)
+        try:
+            result = self.conn.search_s(query_dn, ldap.SCOPE_BASE)
+        except ldap.NO_SUCH_OBJECT:
+            return False
+        return bool(result)
+
     @log_ldap_exceptions
     def add_to_org(self, org_id, user_id_list):
         assert self._bound, "call `perform_bind` before `add_to_org`"
