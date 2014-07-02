@@ -126,6 +126,7 @@ class NameAlreadyExists(Exception):
 class OrgRenameError(Exception):
     pass
 
+
 class RoleRenameError(Exception):
     pass
 
@@ -145,7 +146,9 @@ def log_ldap_exceptions(func):
 
 import ldap.resiter
 
-class StreamingLDAPObject(ldap.ldapobject.LDAPObject, ldap.resiter.ResultProcessor):
+
+class StreamingLDAPObject(ldap.ldapobject.LDAPObject,
+                          ldap.resiter.ResultProcessor):
     pass
 
 
@@ -171,7 +174,7 @@ class UsersDB(object):
     @log_ldap_exceptions
     def connect(self, server):
         conn = StreamingLDAPObject('ldap://' + server)
-        #conn = ldap.initialize('ldap://' + server)
+        # conn = ldap.initialize('ldap://' + server)
         conn.protocol_version = ldap.VERSION3
         conn.timeout = LDAP_TIMEOUT
         return conn
@@ -318,8 +321,8 @@ class UsersDB(object):
             if ldap_name in attr:
                 if ldap_name.endswith('Timestamp'):
                     try:
-                        out[name] = datetime.strptime(attr[ldap_name][0][:14] + "Z",
-                                                      '%Y%m%d%H%M%SZ')
+                        out[name] = datetime.strptime(
+                            attr[ldap_name][0][:14] + "Z", '%Y%m%d%H%M%SZ')
                     except ValueError:
                         out[name] = attr[ldap_name][0]
                 else:
@@ -553,18 +556,20 @@ class UsersDB(object):
         assert dn == query_dn
 
         user_info = self._unpack_user_info(dn, attr)
-        #user_info['organisation_links'] = self._search_user_in_orgs(user_id)
+        # user_info['organisation_links'] = self._search_user_in_orgs(user_id)
 
         return user_info
 
     @log_ldap_exceptions
     def pending_membership(self, user_id):
         """
-        Returns a list or organisation ids for which member is pending membership
+        Returns a list or organisation ids
+        for which member is pending membership
         """
         user_dn = self._user_dn(user_id)
         query_filter = ldap.filter.filter_format(
-            '(&(objectClass=organizationGroup)(pendingUniqueMember=%s))', (user_dn,))
+            '(&(objectClass=organizationGroup)(pendingUniqueMember=%s))',
+            (user_dn,))
 
         result = self.conn.search_s(self._org_dn_suffix, ldap.SCOPE_ONELEVEL,
                                     filterstr=query_filter, attrlist=())
@@ -1088,8 +1093,8 @@ class UsersDB(object):
                                     attrlist=('pendingUniqueMember',))
         assert len(result) == 1
         dn, attr = result[0]
-        #import pdb; pdb.set_trace()
-        return [self._user_id(d) for d in attr.get('pendingUniqueMember', []) if d != '']
+        return [self._user_id(d) for d in attr.get('pendingUniqueMember', [])
+                if d != '']
 
     @log_ldap_exceptions
     def add_pending_to_org(self, org_id, user_id_list):
@@ -1098,7 +1103,8 @@ class UsersDB(object):
 
         # record this change in the user's log
         for user in user_id_list:
-            self.add_change_record(user, ADD_PENDING_TO_ORG, {'organisation': org_id})
+            self.add_change_record(user, ADD_PENDING_TO_ORG,
+                                   {'organisation': org_id})
 
         user_dn_list = [self._user_dn(user_id) for user_id in user_id_list]
         changes = ((ldap.MOD_ADD, 'pendingUniqueMember', user_dn_list), )
@@ -1125,6 +1131,8 @@ class UsersDB(object):
         assert result == (ldap.RES_MODIFY, [])
 
     def org_exists(self, org_id):
+        if not org_id:
+            return None
         # return True if the org_id exists as a valid Organisation in LDAP
         query_dn = self._org_dn(org_id)
         try:
@@ -1267,7 +1275,7 @@ class UsersDB(object):
 
             try:
                 self.create_role(new_role_id, description[0])
-            except ValueError:  #might already exist
+            except ValueError:  # might already exist
                 pass
 
             role_dn = self._role_dn(new_role_id)
@@ -1310,7 +1318,7 @@ class UsersDB(object):
 
             try:
                 self.create_role(new_role_id, description[0])
-            except ValueError:  #might already exist
+            except ValueError:  # might already exist
                 pass
 
             role_dn = self._role_dn(new_role_id)
@@ -1623,8 +1631,8 @@ class UsersDB(object):
     @log_ldap_exceptions
     def add_permittedPerson(self, role_id, user_id):
         """ Adds `user_id` as permittedPerson for `role_id` """
-        #user_info = self.user_info(user_id)
-        #role_info = self.role_info(role_id)
+        # user_info = self.user_info(user_id)
+        # role_info = self.role_info(role_id)
         user_dn = self._user_dn(user_id)
         role_dn = self._role_dn(role_id)
         log.info("Adding permittedPerson %r for %r", user_dn, role_dn)
@@ -1653,7 +1661,7 @@ class UsersDB(object):
     @log_ldap_exceptions
     def remove_permittedPerson(self, role_id, user_id):
         """ Removes `user_id` from permittedPerson list in `role_id` """
-        #role_info = self.role_info(role_id)
+        # role_info = self.role_info(role_id)
         user_dn = self._user_dn(user_id)
         role_dn = self._role_dn(role_id)
         log.info("Removing permittedPerson %r for %r", user_dn, role_dn)
@@ -1668,7 +1676,7 @@ class UsersDB(object):
     @log_ldap_exceptions
     def remove_permittedSender(self, role_id, sender):
         """ Remove `sender` token from permittedSender in `role_id` """
-        #role_info = self.role_info(role_id)
+        # role_info = self.role_info(role_id)
         role_dn = self._role_dn(role_id)
         log.info("Removing permittedSender %r for %r", sender, role_dn)
 
@@ -1691,7 +1699,7 @@ class UsersDB(object):
     def set_role_leader(self, role_id, user_id):
         """ Set user_id (member of role_id) as leader """
         role_dn = self._role_dn(role_id)
-        #user_info = self.user_info(user_id)
+        # user_info = self.user_info(user_id)
         user_dn = self._user_dn(user_id)
         members = self.members_in_role(role_id)
         if user_id not in members['users']:

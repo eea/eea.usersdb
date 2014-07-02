@@ -1,5 +1,6 @@
 1.3.13 (unreleased)
 ------------------------
+* fix for empty organisations [dumitval]
 
 1.3.12 (2014-07-01)
 ------------------------
