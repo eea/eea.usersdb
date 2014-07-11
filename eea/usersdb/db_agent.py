@@ -1134,10 +1134,16 @@ class UsersDB(object):
         if not org_id:
             return None
         # return True if the org_id exists as a valid Organisation in LDAP
-        query_dn = self._org_dn(org_id)
+        try:
+            query_dn = self._org_dn(org_id)
+        except AssertionError:
+            return False
         try:
             result = self.conn.search_s(query_dn, ldap.SCOPE_BASE)
         except ldap.NO_SUCH_OBJECT:
+            return False
+        except:
+            log.exception("Could not search for %s with org_dn", org_id, query_dn)
             return False
         return bool(result)
 

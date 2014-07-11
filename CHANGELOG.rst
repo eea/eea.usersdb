@@ -1,5 +1,7 @@
 1.3.14 (unreleased)
 ------------------------
+* Bug fix: avoid UnicodedEcodeErrors from ldap server when searching for an organisation
+  [tiberich]
 
 1.3.13 (2014-07-02)
 ------------------------
