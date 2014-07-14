@@ -594,16 +594,18 @@ class UsersDB(object):
         """
         Returns a dictionary describing the role `role_id`.
         """
-
         query_dn = self._role_dn(role_id)
+        return self._role_info(query_dn)
+
+    def _role_info(self, role_dn):
         try:
-            result = self.conn.search_s(query_dn, ldap.SCOPE_BASE)
+            result = self.conn.search_s(role_dn, ldap.SCOPE_BASE)
         except ldap.NO_SUCH_OBJECT:
             raise RoleNotFound("Role %r does not exist" % role_id)
 
         assert len(result) == 1
         dn, attr = result[0]
-        assert dn.lower() == query_dn.lower().strip()
+        assert dn.lower() == role_dn.lower().strip()
         description = attr.get('description', [""])[0].decode(self._encoding)
         return {'description': description,
                 'owner': attr.get('owner', []),
@@ -1990,6 +1992,45 @@ class UsersDB(object):
                                # show up
                                )[0]})
                     for dn, attr in result)
+
+    @log_ldap_exceptions
+    def _all_roles_list(self):
+        """ Returns a flat list of the role_id of all roles.
+
+        We're using the dequeu strategy of first-level lookups because of LDAP result
+        size limitations
+        """
+        from collections import deque
+        all_roles = []
+
+        def child_roles(role_dn):
+            return [x[0] for x in
+                        self.conn.search_s(
+                            role_dn,
+                            ldap.SCOPE_ONELEVEL,
+                            filterstr='(objectClass=groupOfUniqueNames)',
+                            attrlist=[]
+                        )]
+
+        to_crawl = deque(child_roles(self._role_dn_suffix))
+
+        while to_crawl:
+            current = to_crawl.popleft()
+            all_roles.append(current)
+            children = child_roles(current)
+            to_crawl.extend(children)
+
+        return all_roles
+
+    @log_ldap_exceptions
+    def all_roles(self):
+        """ Returns a list of all roles infos
+        """
+        _all = []
+        for role_cn in self._all_roles_list():
+            role_info = self._role_info(role_cn)
+            _all.append((role_cn, role_info))
+        return _all
 
     @log_ldap_exceptions
     def set_user_picture(self, user_id, binary_data):
