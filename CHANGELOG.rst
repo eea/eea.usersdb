@@ -1,7 +1,9 @@
-1.3.14 (unreleased)
+1.3.14 (2014-07-15)
 ------------------------
 * Bug fix: avoid UnicodedEcodeErrors from ldap server when searching for an organisation
   [tiberich]
+* Feature: added the all_roles method that returns role_info for all roles in db
+  [tiberich #19143]
 
 1.3.13 (2014-07-02)
 ------------------------
