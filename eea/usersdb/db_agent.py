@@ -173,10 +173,23 @@ class UsersDB(object):
 
     @log_ldap_exceptions
     def connect(self, server):
-        conn = StreamingLDAPObject('ldap://' + server)
-        # conn = ldap.initialize('ldap://' + server)
+        info = server.split(':')
+        if (len(info) == 2):
+            if info[1] == '389':
+                server = info[0]
+        ldap.set_option(ldap.OPT_X_TLS_REQUIRE_CERT, ldap.OPT_X_TLS_NEVER)
+        conn = StreamingLDAPObject('ldaps://' + server)
         conn.protocol_version = ldap.VERSION3
         conn.timeout = LDAP_TIMEOUT
+
+        try:
+            conn.whoami_s()
+        except ldap.SERVER_DOWN:
+            conn = ldap.initialize('ldap://' + server)
+            conn.protocol_version = ldap.VERSION3
+            conn.timeout = LDAP_TIMEOUT
+            conn.whoami_s()
+
         return conn
 
     def _role_dn(self, role_id):
@@ -601,7 +614,7 @@ class UsersDB(object):
         try:
             result = self.conn.search_s(role_dn, ldap.SCOPE_BASE)
         except ldap.NO_SUCH_OBJECT:
-            raise RoleNotFound("Role %r does not exist" % role_id)
+            raise RoleNotFound("Role %r does not exist" % role_dn)
 
         assert len(result) == 1
         dn, attr = result[0]
