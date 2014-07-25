@@ -380,6 +380,28 @@ class UsersDB(object):
         return out
 
     @log_ldap_exceptions
+    def role_infos_in_role(self, role_id):
+        """
+        Returns a mapping of `sub_role_id` to `role_info` for subroles
+        of `role_id`.
+        """
+
+        query_dn = self._role_dn(role_id)
+        result = self.conn.search_s(
+            query_dn, ldap.SCOPE_ONELEVEL,
+            filterstr='(objectClass=groupOfUniqueNames)',
+            attrlist=('description','owner', 'permittedSender',
+                      'permittedPerson', 'leaderMember', 'alternateLeader')
+        )
+
+        out = {}
+        for dn, attr in result:
+            out[self._role_id(dn)] = self._unpack_role_info(attr)
+
+        return out
+
+
+    @log_ldap_exceptions
     def filter_roles(
             self, pattern, prefix_dn=None,
             filterstr='(objectClass=groupOfUniqueNames)', attrlist=()):
@@ -619,6 +641,11 @@ class UsersDB(object):
         assert len(result) == 1
         dn, attr = result[0]
         assert dn.lower() == role_dn.lower().strip()
+        return self._unpack_role_info(attr)
+
+    def _unpack_role_info(self, attr):
+        """ return a role info for an object from a result
+        """
         description = attr.get('description', [""])[0].decode(self._encoding)
         return {'description': description,
                 'owner': attr.get('owner', []),

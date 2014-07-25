@@ -1,3 +1,9 @@
+1.3.15 (2014-07-25)
+------------------------
+* Feature: added role_infos_in_role method which returns more information
+  about subroles, given a parent role
+  [tiberich #18817]
+
 1.3.14 (2014-07-15)
 ------------------------
 * Bug fix: avoid UnicodedEcodeErrors from ldap server when searching for an organisation
