@@ -1,3 +1,6 @@
+1.3.16 (unreleased)
+------------------------
+
 1.3.15 (2014-07-25)
 ------------------------
 * Feature: added role_infos_in_role method which returns more information
