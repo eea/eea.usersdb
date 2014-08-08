@@ -1,5 +1,6 @@
 1.3.16 (unreleased)
 ------------------------
+* add EmailAlreadyExists exception for clearer error messages [dumitval]
 
 1.3.15 (2014-07-25)
 ------------------------

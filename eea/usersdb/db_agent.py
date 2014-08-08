@@ -123,6 +123,10 @@ class NameAlreadyExists(Exception):
     pass
 
 
+class EmailAlreadyExists(Exception):
+    pass
+
+
 class OrgRenameError(Exception):
     pass
 
@@ -721,7 +725,7 @@ class UsersDB(object):
 
         email = attr_dict[self.user_schema['email']]
         if self.search_user_by_email(email):
-            raise NameAlreadyExists("Email %r already exists" % email)
+            raise EmailAlreadyExists(email)
 
         try:
             if self._user_rdn in ('', 'uid'):
