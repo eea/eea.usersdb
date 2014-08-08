@@ -1287,7 +1287,7 @@ class UsersDB(object):
               'hierarchicalGroup']),
             ('ou', [role_id.split('-')[-1]]),
             ('uniqueMember', ['']),
-            ('permittedSender', ['owners'])
+            ('permittedSender', ['owners', '*@eea.europa.eu'])
         ]
         if description:
             attrs.append(('description', [description.encode(self._encoding)]))
@@ -1602,7 +1602,6 @@ class UsersDB(object):
         * permittedPerson-s, if any
         Output: {'owner': [..], 'permittedPerson': [..],
                  'permittedSender': [..]}
-
         """
         role_info = self.role_info(role_id)
         owner = map(self._user_id, role_info['owner'])
