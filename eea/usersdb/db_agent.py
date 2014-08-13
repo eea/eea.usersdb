@@ -290,7 +290,7 @@ class UsersDB(object):
                                    self._user_dn_suffix)
             else:
                 dn, attr = result[0]
-            return dn
+            return str(dn)
 
     def _user_id(self, user_dn, attr={}):
         """
@@ -1202,7 +1202,7 @@ class UsersDB(object):
         for user in user_id_list:
             self.add_change_record(user, ADD_TO_ORG, {'organisation': org_id})
 
-        user_dn_list = [self._user_dn(user_id) for user_id in user_id_list]
+        user_dn_list = [str(self._user_dn(user_id)) for user_id in user_id_list]
         changes = ((ldap.MOD_ADD, 'uniqueMember', user_dn_list), )
 
         if not self.members_in_org(org_id):

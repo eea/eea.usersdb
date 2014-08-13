@@ -1,5 +1,8 @@
-1.3.17 (unreleased)
+1.3.17 (2014-08-13)
 ------------------------
+* Bug fix: convert user_dn to string when adding to organisation. To make sure
+  and avoid future problems, always convert _user_dn() call results to strings
+  [tiberich #20633]
 
 1.3.16 (2014-08-08)
 ------------------------
