@@ -276,7 +276,7 @@ class UsersDB(object):
         """
         assert ',' not in user_id
         if self._user_rdn in ('', 'uid'):
-            return 'uid=%s,%s' % (user_id, self._user_dn_suffix)
+            return str('uid=%s,%s' % (user_id, self._user_dn_suffix))
         else:
             # custom RDN branch
             result = self.conn.search_s(
