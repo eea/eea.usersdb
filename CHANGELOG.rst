@@ -1,3 +1,6 @@
+1.3.18 (unreleased)
+------------------------
+
 1.3.17 (2014-08-13)
 ------------------------
 * Bug fix: convert user_dn to string when adding to organisation. To make sure
