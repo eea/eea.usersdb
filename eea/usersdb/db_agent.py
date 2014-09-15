@@ -1035,7 +1035,7 @@ class UsersDB(object):
         result = self.conn.modify_s(
             self._user_dn(user_id),
             [
-                (ldap.MOD_DELETE, 'employeeType', None),
+                (ldap.MOD_REPLACE, 'employeeType', ''),
                 (ldap.MOD_REPLACE, 'mail',
                  email.encode('utf-8') or 'missing'),
             ]
@@ -2157,3 +2157,4 @@ class UsersDB(object):
         from zope.component import getUtility
         from naaya.ldapdump.interfaces import IDumpReader
         return getUtility(IDumpReader).get_dump()
+
