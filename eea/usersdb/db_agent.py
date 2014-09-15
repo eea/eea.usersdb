@@ -1,12 +1,16 @@
 from _backport import wraps
 from datetime import datetime
+from ldap.ldapobject import LDAPObject
+from ldap.resiter import ResultProcessor
 from string import ascii_lowercase, digits, ascii_letters
+import contextlib
 import json
 import ldap
 import ldap.filter
 import logging
 import random
 import re
+
 
 log = logging.getLogger(__name__)
 
@@ -148,11 +152,12 @@ def log_ldap_exceptions(func):
             raise
     return wrapper
 
-import ldap.resiter
+def generate_action_id():
+    return "".join(random.sample(ascii_lowercase, 20))
 
 
-class StreamingLDAPObject(ldap.ldapobject.LDAPObject,
-                          ldap.resiter.ResultProcessor):
+class StreamingLDAPObject(LDAPObject, ResultProcessor):
+    """ Useful in getting more results by bypassing results size restrictions"""
     pass
 
 
@@ -971,7 +976,7 @@ class UsersDB(object):
         result = self.conn.modify_s(
             self._user_dn(user_id), [
                 (ldap.MOD_REPLACE, 'registeredAddress',
-                 json.dumps(metadata)), ]
+                json.dumps(metadata)), ]
         )
         assert result[:2] == (ldap.RES_MODIFY, [])
 
@@ -991,7 +996,8 @@ class UsersDB(object):
             'action': record_type,
             'timestamp': timestamp,
             'author': self._author,
-            'data': data
+            'data': data,
+            'action_id': getattr(self, '_v_action_id', generate_action_id()),
         }
         old_records.append(record)
         self._save_metadata(user_id, old_records)
@@ -2109,6 +2115,12 @@ class UsersDB(object):
                 except Exception:
                     return False
             return True
+
+    @contextlib.contextmanager
+    def new_action(self):
+        self._v_action_id = generate_action_id()
+        yield
+        self._v_action_id = ''
 
     def get_profile_picture(self, user_id):
         """ Return jpegPhoto str attribute if exists, None otherwise """
