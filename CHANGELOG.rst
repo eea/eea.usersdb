@@ -1,5 +1,10 @@
 1.3.18 (unreleased)
 ------------------------
+* Bug fix: fix logging of removed roles when disabling user
+  [tiberich #20422]
+* Feature: added agent.new_action() context manager that enables
+  grouping of actions to facilitate understanding the user changelog
+  [tiberich #20422]
 
 1.3.17 (2014-08-13)
 ------------------------
