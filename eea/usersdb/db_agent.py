@@ -1035,7 +1035,7 @@ class UsersDB(object):
         result = self.conn.modify_s(
             self._user_dn(user_id),
             [
-                (ldap.MOD_REPLACE, 'employeeType', ''),
+                (ldap.MOD_REPLACE, 'employeeType', 'enabled'),
                 (ldap.MOD_REPLACE, 'mail',
                  email.encode('utf-8') or 'missing'),
             ]
@@ -1987,8 +1987,11 @@ class UsersDB(object):
         role_dn = self._role_dn(role_id)
 
         role_dn_list = self._remove_member_dn_from_role_dn(role_dn, member_dn)
-        self.add_change_record(member_id, REMOVED_FROM_ROLE,
-                               {'role': role_id, 'member_type': member_type})
+        roles = sorted([self._role_id(x) for x in role_dn_list])
+
+        for r in roles:
+            self.add_change_record(member_id, REMOVED_FROM_ROLE,
+                                {'role': r, 'member_type': member_type})
         return map(self._role_id, role_dn_list)
 
     @log_ldap_exceptions
