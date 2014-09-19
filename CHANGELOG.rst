@@ -1,5 +1,7 @@
-1.3.18 (unreleased)
+1.3.18 (2014-09-19)
 ------------------------
+* Feature: added a method to retrive orgs for a user
+  [tiberich #20832]
 * Bug fix: fix logging of removed roles when disabling user
   [tiberich #20422]
 * Feature: added agent.new_action() context manager that enables

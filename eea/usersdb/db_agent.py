@@ -2029,6 +2029,15 @@ class UsersDB(object):
                                     filterstr=query_filter, attrlist=())
         return [self._org_id(dn) for dn, attr in result]
 
+    def orgs_for_user(self, user_id):
+        user_dn = self._user_dn(user_id)
+        query_filter = ldap.filter.filter_format(
+            '(&(objectClass=organizationGroup)(uniqueMember=%s))', (user_dn,))
+
+        result = self.conn.search_s(self._org_dn_suffix, ldap.SCOPE_ONELEVEL,
+                                    filterstr=query_filter, attrlist=('o',))
+        return [(self._org_id(dn), attr['o']) for dn, attr in result]
+
     @log_ldap_exceptions
     def all_organisations(self):
         result = self.conn.search_s(
