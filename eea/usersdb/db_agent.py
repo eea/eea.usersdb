@@ -16,6 +16,7 @@ log = logging.getLogger(__name__)
 
 ENABLE_ACCOUNT = "ENABLE_ACCOUNT"
 DISABLE_ACCOUNT = "DISABLE_ACCOUNT"
+RESET_ACCOUNT = "RESET_ACCOUNT"
 
 ADD_TO_ORG = "ADD_TO_ORG"
 REMOVED_FROM_ORG = "REMOVED_FROM_ORG"
@@ -878,6 +879,44 @@ class UsersDB(object):
                                     filterstr=filterstr, attrlist=())
         for dn, attr in result:
             yield dn
+
+    @log_ldap_exceptions
+    def reset_user_roles(self, user_id):
+        """ Remove all the roles of the user the user from LDAP
+
+        It also deletes the references:
+         - roles, organisations, owner/permittedPerson in roles
+
+        It saves these information in the registeredAddress field.
+        """
+
+        assert self._bound, "call `perform_bind` before `disable_user`"
+
+        roles = self.list_member_roles("user", user_id)
+        for role in roles:
+            try:    # it does when it deletes parent role first,
+                    # for a leaf role in the role tree
+                self.remove_from_role(role, "user", user_id)
+            except ValueError:
+                # log.warning("Could not remove role %s for user %s",
+                #             role, user_id)
+                continue
+        roles_p = self.roles_permittedPerson(user_id)
+        for role in roles_p:
+            self.remove_permittedPerson(self._role_id(role), user_id)
+        roles_owner = self.roles_owner(user_id)
+        for role in roles_owner:
+            self.remove_role_owner(self._role_id(role), user_id)
+
+        log.info("Reseting user %r", user_id)
+
+        user_info = self.user_info(user_id)
+        self.add_change_record(user_id, RESET_ACCOUNT, {
+            'email': user_info['email'],
+            'roles': list(roles),
+            'roles_permittedPerson': list(roles_p),
+            'roles_owner': list(roles_owner),
+        })
 
     @log_ldap_exceptions
     def disable_user(self, user_id):
