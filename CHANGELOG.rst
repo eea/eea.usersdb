@@ -1,3 +1,6 @@
+1.3.20 (unreleased)
+------------------------
+
 1.3.19 (2014-09-24)
 ------------------------
 * Feature: added method to reset user roles
