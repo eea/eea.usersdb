@@ -1,5 +1,7 @@
-1.3.19 (unreleased)
+1.3.19 (2014-09-24)
 ------------------------
+* Feature: added method to reset user roles
+  [tiberich #9164]
 
 1.3.18 (2014-09-19)
 ------------------------
