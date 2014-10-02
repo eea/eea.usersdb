@@ -1,5 +1,8 @@
-1.3.21 (unreleased)
+1.3.22 (2014-10-02)
 ------------------------
+* Bug fix: use the destinationIndicator field for the account description,
+  as it is not filled in with old values
+  [tiberich #21245]
 
 1.3.20 (2014-10-02)
 ------------------------

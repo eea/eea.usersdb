@@ -55,17 +55,17 @@ class UserInfoSchema(colander.MappingSchema):
     library does very little validation of its own.
     """
 
-    first_name     = colander.SchemaNode(colander.String())
-    last_name      = colander.SchemaNode(colander.String())
-    job_title      = colander.SchemaNode(colander.String(), missing='')
-    email          = colander.SchemaNode(colander.String())
-    url            = colander.SchemaNode(colander.String(), missing='')
-    postal_address = colander.SchemaNode(colander.String(), missing='')
-    phone          = colander.SchemaNode(PhoneNumber(), missing='')
-    mobile         = colander.SchemaNode(PhoneNumber(), missing='')
-    fax            = colander.SchemaNode(PhoneNumber(), missing='')
-    organisation   = colander.SchemaNode(colander.String(), missing='')
-    description    = colander.SchemaNode(colander.String(), missing='')
+    first_name           = colander.SchemaNode(colander.String())
+    last_name            = colander.SchemaNode(colander.String())
+    job_title            = colander.SchemaNode(colander.String(), missing='')
+    email                = colander.SchemaNode(colander.String())
+    url                  = colander.SchemaNode(colander.String(), missing='')
+    postal_address       = colander.SchemaNode(colander.String(), missing='')
+    phone                = colander.SchemaNode(PhoneNumber(), missing='')
+    mobile               = colander.SchemaNode(PhoneNumber(), missing='')
+    fax                  = colander.SchemaNode(PhoneNumber(), missing='')
+    organisation         = colander.SchemaNode(colander.String(), missing='')
+    destinationIndicator = colander.SchemaNode(colander.String(), missing='')
 
 _url_validator = colander.Regex(r'^http[s]?\://', msg=INVALID_URL)
 UserInfoSchema.phone.validator = _phone_validator
@@ -88,7 +88,7 @@ _description_map = {
     'mobile': "Mobile telephone number",
     'fax': "Fax number",
     'organisation': "Organisation",
-    'description': "Account description",
+    'destinationIndicator': "Account description",
 }
 
 for name, description in _description_map.iteritems():
