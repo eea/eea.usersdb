@@ -1,5 +1,7 @@
-1.3.23 (unreleased)
+1.3.23 (2014-10-02)
 ------------------------
+* Change: change label of the account description field
+  [tiberich #21245]
 
 1.3.22 (2014-10-02)
 ------------------------
