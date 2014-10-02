@@ -1,7 +1,8 @@
 import colander
-import re
-from string import ascii_lowercase, digits
 import phonenumbers
+
+#import re
+#from string import ascii_lowercase, digits
 
 INVALID_PHONE_MESSAGES = (
     ("Invalid telephone number. It must be written "
@@ -25,7 +26,7 @@ class PhoneNumber(colander.String):
     def deserialize(self, node, cstruct):
         try:
             number = phonenumbers.parse(cstruct)
-        except Exception, e:
+        except Exception:
             return cstruct
         else:
             return phonenumbers.format_number(number, NUMBER_FORMAT)
@@ -39,7 +40,7 @@ def _phone_validator(node, value):
         return
     try:
         number = phonenumbers.parse(value)
-    except Exception, e:
+    except Exception:
         raise colander.Invalid(node, INVALID_PHONE_MESSAGES[0])
     else:
         if not phonenumbers.is_possible_number(number):
@@ -64,6 +65,7 @@ class UserInfoSchema(colander.MappingSchema):
     mobile         = colander.SchemaNode(PhoneNumber(), missing='')
     fax            = colander.SchemaNode(PhoneNumber(), missing='')
     organisation   = colander.SchemaNode(colander.String(), missing='')
+    description    = colander.SchemaNode(colander.String(), missing='')
 
 _url_validator = colander.Regex(r'^http[s]?\://', msg=INVALID_URL)
 UserInfoSchema.phone.validator = _phone_validator
@@ -86,6 +88,7 @@ _description_map = {
     'mobile': "Mobile telephone number",
     'fax': "Fax number",
     'organisation': "Organisation",
+    'description': "Account description",
 }
 
 for name, description in _description_map.iteritems():

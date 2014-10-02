@@ -57,6 +57,7 @@ EIONET_USER_SCHEMA = {
     'fax': 'facsimileTelephoneNumber',
     'url': 'labeledURI',
     'status': 'employeeType',
+    'description': 'description',
 }
 
 # actually operational ldap attributes

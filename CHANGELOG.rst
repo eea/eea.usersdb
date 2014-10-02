@@ -1,5 +1,7 @@
-1.3.20 (unreleased)
+1.3.20 (2014-10-02)
 ------------------------
+* Feature: added the account description field for the EIONET users
+  [tiberich #21245]
 
 1.3.19 (2014-09-24)
 ------------------------
