@@ -658,12 +658,18 @@ class UsersDB(object):
         """ return a role info for an object from a result
         """
         description = attr.get('description', [""])[0].decode(self._encoding)
-        return {'description': description,
-                'owner': attr.get('owner', []),
-                'permittedSender': attr.get('permittedSender', []),
-                'permittedPerson': attr.get('permittedPerson', []),
-                'leaderMember': attr.get('leaderMember', []),
-                'alternateLeader': attr.get('alternateLeader', [])}
+        extended = attr.get('businessCategory', ['False'])[0]
+        extended = True and extended.lower() == 'true' or False
+
+        return {
+            'description': description,
+            'owner': attr.get('owner', []),
+            'permittedSender': attr.get('permittedSender', []),
+            'permittedPerson': attr.get('permittedPerson', []),
+            'leaderMember': attr.get('leaderMember', []),
+            'alternateLeader': attr.get('alternateLeader', []),
+            'extendedManagement': extended
+        }
 
     @log_ldap_exceptions
     def perform_bind(self, bind_dn, bind_pw):
@@ -1487,6 +1493,23 @@ class UsersDB(object):
         except ldap.NO_SUCH_ATTRIBUTE:
             self.conn.modify_s(role_dn, (
                 (ldap.MOD_ADD, 'description', [description_bytes]),
+            ))
+
+    @log_ldap_exceptions
+    def set_role_extended_management(self, role_id, is_extended):
+        """ Set the extended management flag for this role
+        """
+        assert self._bound, "call `perform_bind` before `set_role_description`"
+        log.info("Setting extended management description %r for role %r", is_extended, role_id)
+
+        role_dn = self._role_dn(role_id)
+        try:
+            self.conn.modify_s(role_dn, (
+                (ldap.MOD_REPLACE, 'businessCategory', [str(is_extended)]),
+            ))
+        except ldap.NO_SUCH_ATTRIBUTE:
+            self.conn.modify_s(role_dn, (
+                (ldap.MOD_ADD, 'businessCategory', [str(is_extended)]),
             ))
 
     def _sub_roles(self, role_id):
