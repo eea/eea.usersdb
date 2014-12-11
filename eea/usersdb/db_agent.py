@@ -2118,7 +2118,7 @@ class UsersDB(object):
                     for dn, attr in result)
 
     @log_ldap_exceptions
-    def _all_roles_list(self):
+    def _all_roles_list(self, parent_role_id=None):
         """ Returns a flat list of the role_id of all roles.
 
         We're using the dequeu strategy of first-level lookups because of LDAP result
@@ -2136,7 +2136,11 @@ class UsersDB(object):
                             attrlist=[]
                         )]
 
-        to_crawl = deque(child_roles(self._role_dn_suffix))
+        if parent_role_id is not None:
+            root = self._role_dn(parent_role_id)
+        else:
+            root = self._role_dn_suffix
+        to_crawl = deque(child_roles(root))
 
         while to_crawl:
             current = to_crawl.popleft()
@@ -2147,11 +2151,11 @@ class UsersDB(object):
         return all_roles
 
     @log_ldap_exceptions
-    def all_roles(self):
+    def all_roles(self, parent_role_id=None):
         """ Returns a list of all roles infos
         """
         _all = []
-        for role_cn in self._all_roles_list():
+        for role_cn in self._all_roles_list(parent_role_id):
             role_info = self._role_info(role_cn)
             _all.append((role_cn, role_info))
         return _all

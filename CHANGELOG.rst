@@ -1,5 +1,7 @@
 1.3.24 (unreleased)
 ------------------------
+* Change: allow getting all subroles for a specific role in _all_roles_list
+  [tiberich #21218]
 
 1.3.23 (2014-10-02)
 ------------------------
