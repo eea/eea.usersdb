@@ -654,6 +654,15 @@ class UsersDB(object):
         assert dn.lower() == role_dn.lower().strip()
         return self._unpack_role_info(attr)
 
+    def role_exists(self, role_id):
+        role_dn = self._role_dn(role_id)
+        try:
+            self.conn.search_s(role_dn, ldap.SCOPE_BASE)
+        except ldap.NO_SUCH_OBJECT:
+            return False
+
+        return True
+
     def _unpack_role_info(self, attr):
         """ return a role info for an object from a result
         """
