@@ -1577,7 +1577,7 @@ class UsersDB(object):
         return [self._unpack_user_info(dn, attr) for (dn, attr) in result]
 
     @log_ldap_exceptions
-    def search_user(self, name, lookup=['all']):
+    def search_user(self, name, lookup=['all'], no_disabled=False):
         query = name.lower().encode(self._encoding)
         lookup_filters = []
         query_arguments = []
@@ -1594,7 +1594,11 @@ class UsersDB(object):
                     ACCEPTED_SEARCH_FIELDS[field]['ldap_filter'])
                 query_arguments.append(query)
 
-        pattern = '(&(objectClass=person)(|%s))' % ''.join(lookup_filters)
+        disabled_filter = no_disabled and "(!(employeeType=*disabled*))" or ''
+
+        pattern = '(&(objectClass=person)%s(|%s))' % \
+            (disabled_filter, ''.join(lookup_filters), )
+
         query_filter = ldap.filter.filter_format(
             pattern, tuple(query_arguments))
         result = self.conn.search_s(self._user_dn_suffix, ldap.SCOPE_ONELEVEL,

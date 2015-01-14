@@ -2,6 +2,8 @@
 ------------------------
 * Change: allow getting all subroles for a specific role in _all_roles_list
   [tiberich #21218]
+* Feature: allow excluding disabled users in search_user
+  [tiberich #22488]
 
 1.3.23 (2014-10-02)
 ------------------------
