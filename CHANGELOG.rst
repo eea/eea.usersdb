@@ -1,3 +1,6 @@
+1.3.25 (unreleased)
+------------------------
+
 1.3.24 (2015-01-15)
 ------------------------
 * Change: allow getting all subroles for a specific role in _all_roles_list
