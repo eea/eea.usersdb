@@ -1551,9 +1551,11 @@ class UsersDB(object):
         return self.conn.search_s(*args, **kwargs)
 
     @log_ldap_exceptions
-    def search_user_by_email(self, email):
+    def search_user_by_email(self, email, no_disabled=False):
+        disabled_filter = no_disabled and "(!(employeeType=*disabled*))" or ''
+
         query = email.encode(self._encoding)
-        pattern = '(&(objectClass=person)(mail=%s))'
+        pattern = '(&(objectClass=person){0}(mail=%s))'.format(disabled_filter)
         query_filter = ldap.filter.filter_format(pattern, (query,))
 
         result = self.conn.search_s(self._user_dn_suffix, ldap.SCOPE_ONELEVEL,
@@ -1578,6 +1580,10 @@ class UsersDB(object):
 
     @log_ldap_exceptions
     def search_user(self, name, lookup=['all'], no_disabled=False):
+        """ Search for a user in several fields
+
+        no_disabled: if True, will not return users that are disabled
+        """
         query = name.lower().encode(self._encoding)
         lookup_filters = []
         query_arguments = []
