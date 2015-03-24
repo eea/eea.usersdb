@@ -1,5 +1,7 @@
-1.3.25 (unreleased)
+1.3.25 (2015-03-24)
 ------------------------
+* Feature: added a method to get the original email of a disabled user
+  [tiberich #23187]
 
 1.3.24 (2015-01-15)
 ------------------------

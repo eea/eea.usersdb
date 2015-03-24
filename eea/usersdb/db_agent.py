@@ -1058,6 +1058,20 @@ class UsersDB(object):
         self._save_metadata(user_id, old_records)
 
     @log_ldap_exceptions
+    def get_email_for_disabled_user_dn(self, user_dn):
+        user_id = self._user_id(user_dn)
+        meta = self._get_metadata(user_id)
+        # search for the last disable record that has an email address
+        email = None
+        rec = None
+        for rec in reversed(meta):  # new info is always appended
+            if rec['action'] == DISABLE_ACCOUNT:
+                email = rec['data']['email']
+                break
+
+        return email
+
+    @log_ldap_exceptions
     def enable_user(self, user_id):
         """ Enables the user, after it has been disabled
 
