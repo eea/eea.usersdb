@@ -1,3 +1,6 @@
+1.3.26 (unreleased)
+------------------------
+
 1.3.25 (2015-03-24)
 ------------------------
 * Feature: added a method to get the original email of a disabled user
