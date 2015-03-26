@@ -950,9 +950,10 @@ class UsersDB(object):
         # TODO: test if the user isn't already disabled, what to do then?
 
         assert self._bound, "call `perform_bind` before `disable_user`"
-        organisations = self.user_organisations(user_id)
-        for org in organisations:
-            self.remove_from_org(self._org_id(org), [user_id])
+        organisations = [self._org_id(org) for org in
+                            self.user_organisations(user_id)]
+        for org_id in organisations:
+            self.remove_from_org(org_id, [user_id])
 
         roles = self.list_member_roles("user", user_id)
         for role in roles:
@@ -975,7 +976,7 @@ class UsersDB(object):
         user_info = self.user_info(user_id)
         self.add_change_record(user_id, DISABLE_ACCOUNT, {
             'email': user_info['email'],
-            'organisations': list(organisations),
+            'organisations': organisations,
             'roles': list(roles),
             'roles_permittedPerson': list(roles_p),
             'roles_owner': list(roles_owner),

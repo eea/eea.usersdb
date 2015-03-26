@@ -1,5 +1,9 @@
 1.3.26 (unreleased)
 ------------------------
+* Feature: allow passing bind=True to agent_from_uf agent factory
+  [tiberich #24362]
+* Bug fix: properly record organisation ids when enabling/disabling user
+  [tiberich #24386]
 
 1.3.25 (2015-03-24)
 ------------------------
