@@ -1,3 +1,6 @@
+1.3.27 (unreleased)
+------------------------
+
 1.3.26 (2015-03-30)
 ------------------------
 * Feature: allow passing bind=True to agent_from_uf agent factory
