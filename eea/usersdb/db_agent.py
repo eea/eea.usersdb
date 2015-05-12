@@ -42,6 +42,15 @@ UNSET_AS_ALTERNATE_ROLE_LEADER = "UNSET_AS_ALTERNATE_ROLE_LEADER"
 SET_AS_ROLE_LEADER = "SET_AS_ROLE_LEADER"
 UNSET_AS_ROLE_LEADER = "UNSET_AS_ROLE_LEADER"
 
+# Modification Records added to organisation record
+ADDED_MEMBER_TO_ORG = "ADDED_MEMBER_TO_ORG"
+ADDED_PENDING_MEMBER_TO_ORG = "ADDED_MEMBER_TO_ORG"
+REMOVED_MEMBER_FROM_ORG = "REMOVED_MEMBER_FROM_ORG"
+CREATED_ORG = "CREATED_ORG"
+EDITED_ORG = "EDITED_ORG"
+REMOVED_PENDING_MEMBER_FROM_ORG = "REMOVED_PENDING_MEMBER_FROM_ORG"
+RENAMED_ORGANISATION = "RENAMED_ORGANISATION"
+
 LDAP_TIMEOUT = 10
 
 EIONET_USER_SCHEMA = {
@@ -926,8 +935,10 @@ class UsersDB(object):
 
         log.info("Reseting user %r", user_id)
 
+        user_dn = self._user_dn(user_id)
         user_info = self.user_info(user_id)
-        self.add_change_record(user_id, RESET_ACCOUNT, {
+
+        self.add_change_record(user_dn, RESET_ACCOUNT, {
             'email': user_info['email'],
             'roles': list(roles),
             'roles_permittedPerson': list(roles_p),
@@ -974,7 +985,8 @@ class UsersDB(object):
         log.info("Disabling user %r", user_id)
 
         user_info = self.user_info(user_id)
-        self.add_change_record(user_id, DISABLE_ACCOUNT, {
+        user_dn = self._user_dn(user_id)
+        self.add_change_record(user_dn, DISABLE_ACCOUNT, {
             'email': user_info['email'],
             'organisations': organisations,
             'roles': list(roles),
@@ -997,23 +1009,22 @@ class UsersDB(object):
         result = self.conn.passwd_s(self._user_dn(user_id), None, new_pw)
         assert result[:2] in ((ldap.RES_EXTENDED, []), (None, None))
 
-    def _get_metadata(self, user_id):
+    def _get_metadata(self, rec_dn):
         """ Get the registeredAddress field, json decoded
 
         We abuse the registeredAddress to save various information (metadata)
         """
-        query_dn = self._user_dn(user_id)
         try:
             result = self.conn.search_s(
-                query_dn, ldap.SCOPE_BASE,
-                filterstr='(objectClass=organizationalPerson)',
+                rec_dn, ldap.SCOPE_BASE,
+                #filterstr='(objectClass=organizationalPerson)',
                 attrlist=(['*'] + DISABLE_USER_SCHEMA.values()))
         except ldap.NO_SUCH_OBJECT:
-            raise UserNotFound("User '%s' does not exist" % user_id)
+            raise UserNotFound("Record '%s' does not exist" % rec_dn)
 
         assert len(result) == 1
         dn, attr = result[0]
-        assert dn == query_dn
+        assert dn == rec_dn
 
         # Save the modification details in the registeredAddress field
         ra = attr.get('registeredAddress')
@@ -1024,26 +1035,27 @@ class UsersDB(object):
         ra = json.loads(ra)
         return ra
 
-    def _save_metadata(self, user_id, metadata):
+    def _save_metadata(self, rec_dn, metadata):
         """ Save a python object (json serializable) in the
         registeredAddress field
 
         """
         result = self.conn.modify_s(
-            self._user_dn(user_id), [
+            rec_dn, [
                 (ldap.MOD_REPLACE, 'registeredAddress',
-                json.dumps(metadata)), ]
+                 json.dumps(metadata)),
+            ]
         )
         assert result[:2] == (ldap.RES_MODIFY, [])
 
     @log_ldap_exceptions
-    def add_change_record(self, user_id, record_type, data=None):
+    def add_change_record(self, rec_dn, record_type, data=None):
         """ Add a new record entry to the changelog that we keep
         for each user
         """
         if not data:
             data = {}
-        old_records = self._get_metadata(user_id)
+        old_records = self._get_metadata(rec_dn)
         utc_now = datetime.utcnow().replace(microsecond=0)
         timestamp = utc_now.isoformat()
         if '+' not in timestamp:
@@ -1056,12 +1068,11 @@ class UsersDB(object):
             'action_id': getattr(self, '_v_action_id', generate_action_id()),
         }
         old_records.append(record)
-        self._save_metadata(user_id, old_records)
+        self._save_metadata(rec_dn, old_records)
 
     @log_ldap_exceptions
     def get_email_for_disabled_user_dn(self, user_dn):
-        user_id = self._user_id(user_dn)
-        meta = self._get_metadata(user_id)
+        meta = self._get_metadata(user_dn)
         # search for the last disable record that has an email address
         email = None
         rec = None
@@ -1081,9 +1092,9 @@ class UsersDB(object):
         It adds the action info to the registeredAddress field
         """
         assert self._bound, "call `perform_bind` before `disable_user`"
-        self._user_dn(user_id)  # is this needed?
+        user_dn = self._user_dn(user_id)
 
-        meta = self._get_metadata(user_id)
+        meta = self._get_metadata(user_dn)
 
         log.info("Enabling user %r", user_id)
 
@@ -1100,10 +1111,10 @@ class UsersDB(object):
         assert has_disable_record, ("The user can't be enabled, was not "
                                     "properly disabled")
 
-        self.add_change_record(user_id, ENABLE_ACCOUNT, rec['data'])
+        self.add_change_record(user_dn, ENABLE_ACCOUNT, rec['data'])
 
         result = self.conn.modify_s(
-            self._user_dn(user_id),
+            user_dn,
             [
                 (ldap.MOD_REPLACE, 'employeeType', 'enabled'),
                 (ldap.MOD_REPLACE, 'mail',
@@ -1183,8 +1194,13 @@ class UsersDB(object):
             attrs.append(
                 (self.org_schema[name], [value.encode(self._encoding)]))
 
-        result = self.conn.add_s(self._org_dn(org_id), attrs)
+
+        org_dn = self._org_dn(org_id)
+        result = self.conn.add_s(org_dn, attrs)
+
         assert result == (ldap.RES_ADD, [])
+
+        self.add_change_record(org_dn, CREATED_ORG, {})
 
     @log_ldap_exceptions
     def set_org_info(self, org_id, new_info):
@@ -1198,6 +1214,8 @@ class UsersDB(object):
         org_dn = self._org_dn(org_id)
         result = self.conn.modify_s(org_dn, changes)
         assert result == (ldap.RES_MODIFY, [])
+
+        self.add_change_record(org_dn, EDITED_ORG, {})
 
     @log_ldap_exceptions
     def members_in_org(self, org_id):
@@ -1222,16 +1240,19 @@ class UsersDB(object):
     def add_pending_to_org(self, org_id, user_id_list):
         assert self._bound, "call `perform_bind` before `add_to_org`"
         log.info("Adding users %r to organisation %r", user_id_list, org_id)
-
+        org_dn = self._org_dn(org_id)
         # record this change in the user's log
-        for user in user_id_list:
-            self.add_change_record(user, ADD_PENDING_TO_ORG,
+        users = [(user_id, self._user_dn(user_id)) for user_id in user_id_list]
+        for (user_id, user_dn) in users:
+            self.add_change_record(user_dn, ADD_PENDING_TO_ORG,
                                    {'organisation': org_id})
+            self.add_change_record(org_dn, ADDED_PENDING_MEMBER_TO_ORG,
+                                   {'member': user_id})
 
-        user_dn_list = [self._user_dn(user_id) for user_id in user_id_list]
+        user_dn_list = [user_dn for (user_id, user_dn) in users]
         changes = ((ldap.MOD_ADD, 'pendingUniqueMember', user_dn_list), )
 
-        result = self.conn.modify_s(self._org_dn(org_id), changes)
+        result = self.conn.modify_s(org_dn, changes)
         assert result == (ldap.RES_MODIFY, [])
 
     @log_ldap_exceptions
@@ -1241,15 +1262,19 @@ class UsersDB(object):
                  user_id_list, org_id)
 
         # record this change in the user's log
-        for user in user_id_list:
-            self.add_change_record(user, REMOVED_PENDING_FROM_ORG, {
+        org_dn = self._org_dn(org_id)
+        users = [(user_id, self._user_dn(user_id)) for user_id in user_id_list]
+        for user_id, user_dn in users:
+            self.add_change_record(user_dn, REMOVED_PENDING_FROM_ORG, {
                 'organisation': org_id,
             })
+            self.add_change_record(org_dn, REMOVED_PENDING_MEMBER_FROM_ORG,
+                                   {'member': user_id})
 
-        user_dn_list = [self._user_dn(user_id) for user_id in user_id_list]
+        user_dn_list = [user_dn for (user_id, user_dn) in users]
         changes = ((ldap.MOD_DELETE, 'pendingUniqueMember', user_dn_list), )
 
-        result = self.conn.modify_s(self._org_dn(org_id), changes)
+        result = self.conn.modify_s(org_dn, changes)
         assert result == (ldap.RES_MODIFY, [])
 
     def org_exists(self, org_id):
@@ -1275,11 +1300,17 @@ class UsersDB(object):
         log.info("Adding users %r to organisation %r", user_id_list, org_id)
 
         # record this change in the user's log
-        for user in user_id_list:
-            self.add_change_record(user, ADD_TO_ORG, {'organisation': org_id})
+        users = [(user_id, str(self._user_dn(user_id))) for user_id in user_id_list]
+        org_dn = self._org_dn(org_id)
 
-        user_dn_list = [str(self._user_dn(user_id)) for user_id in user_id_list]
-        changes = ((ldap.MOD_ADD, 'uniqueMember', user_dn_list), )
+        for user_id, user_dn in users:
+            self.add_change_record(user_dn, ADD_TO_ORG, {'organisation': org_id})
+            self.add_change_record(org_dn, ADDED_MEMBER_TO_ORG,
+                                   {'member': user_id})
+
+        changes = (
+            (ldap.MOD_ADD, 'uniqueMember', [dn for uid, dn in users]),
+        )
 
         if not self.members_in_org(org_id):
             # we are removing all members; add placeholder value
@@ -1295,12 +1326,16 @@ class UsersDB(object):
                  user_id_list, org_id)
 
         # record this change in the user's log
-        for user in user_id_list:
-            self.add_change_record(user, REMOVED_FROM_ORG, {
+        users = ((user_id, self._user_dn(user_id)) for user_id in user_id_list)
+        org_dn = self._org_dn(org_id)
+        for user_id, user_dn in users:
+            self.add_change_record(user_dn, REMOVED_FROM_ORG, {
                 'organisation': org_id,
             })
+            self.add_change_record(org_dn, REMOVED_MEMBER_FROM_ORG,
+                                   {'member': user_id})
 
-        user_dn_list = [self._user_dn(user_id) for user_id in user_id_list]
+        user_dn_list = [user_dn for (user_dn, user_id) in users]
         changes = ((ldap.MOD_DELETE, 'uniqueMember', user_dn_list), )
 
         # Check if any member remain, add placeholder value in
@@ -1308,7 +1343,8 @@ class UsersDB(object):
         if not (set(self.members_in_org(org_id)) - set(user_id_list)):
             changes = ((ldap.MOD_ADD, 'uniqueMember', ['']),) + changes
 
-        result = self.conn.modify_s(self._org_dn(org_id), changes)
+        #import pdb; pdb.set_trace()
+        result = self.conn.modify_s(org_dn, changes)
         assert result == (ldap.RES_MODIFY, [])
 
     @log_ldap_exceptions
@@ -1342,6 +1378,10 @@ class UsersDB(object):
                    "from %r to %r" % (org_dn, new_org_dn))
             log.exception(msg)
             raise OrgRenameError(msg)
+
+        self.add_change_record(new_org_dn,
+                               RENAMED_ORGANISATION,
+                               {'old_name': org_id})
 
     @log_ldap_exceptions
     def delete_org(self, org_id):
@@ -1695,8 +1735,9 @@ class UsersDB(object):
 
         role_dn_list = self._add_member_dn_to_role_dn(role_dn, member_dn)
         roles = map(self._role_id, role_dn_list)
+        user_dn = self._user_dn(member_id)
         for role_id in roles:
-            self.add_change_record(member_id, ADDED_TO_ROLE, {
+            self.add_change_record(user_dn, ADDED_TO_ROLE, {
                 'role': role_id,
                 'member_type': member_type,
             })
@@ -1746,7 +1787,7 @@ class UsersDB(object):
                 updated.append(self._role_id(role_dn))
 
         for role_id in updated:
-            self.add_change_record(user_id, ADDED_AS_ROLE_OWNER,
+            self.add_change_record(user_dn, ADDED_AS_ROLE_OWNER,
                                    {'role': role_id})
         return updated
 
@@ -1778,7 +1819,7 @@ class UsersDB(object):
 
         for role_id in updated:
             self.add_change_record(
-                user_id, REMOVED_AS_ROLE_OWNER, {'role': role_id})
+                user_dn, REMOVED_AS_ROLE_OWNER, {'role': role_id})
 
         return updated
 
@@ -1795,7 +1836,7 @@ class UsersDB(object):
             (ldap.MOD_ADD, 'permittedPerson', [user_dn]),
         ))
 
-        self.add_change_record(user_id, ADDED_AS_PERMITTED_PERSON,
+        self.add_change_record(user_dn, ADDED_AS_PERMITTED_PERSON,
                                {'role': role_id})
 
     @log_ldap_exceptions
@@ -1869,7 +1910,7 @@ class UsersDB(object):
                 (ldap.MOD_ADD, 'leaderMember', [user_dn]),
             ))
         finally:
-            self.add_change_record(user_id, SET_AS_ROLE_LEADER,
+            self.add_change_record(user_dn, SET_AS_ROLE_LEADER,
                                    {'role': role_id})
             role_info = self.role_info(role_id)
             if user_dn in role_info['alternateLeader']:
@@ -1880,7 +1921,7 @@ class UsersDB(object):
                 user_id = self._user_id(user_dn)
 
                 self.add_change_record(
-                    user_id,
+                    user_dn,
                     UNSET_AS_ALTERNATE_ROLE_LEADER, {'role': role_id})
 
     @log_ldap_exceptions
@@ -1892,7 +1933,7 @@ class UsersDB(object):
         self.conn.modify_s(role_dn, (
             (ldap.MOD_DELETE, 'leaderMember', [user_dn]),
         ))
-        self.add_change_record(user_id, UNSET_AS_ROLE_LEADER,
+        self.add_change_record(user_dn, UNSET_AS_ROLE_LEADER,
                                {'role': role_id})
 
     @log_ldap_exceptions
@@ -1924,7 +1965,7 @@ class UsersDB(object):
                         (ldap.MOD_ADD, 'alternateLeader', [user_dn]),
                     ))
                     self.add_change_record(
-                        self._user_id(user_dn),
+                        user_dn,
                         SET_AS_ALTERNATE_ROLE_LEADER, {'role': role_id})
                 to_add.remove(role_info['leaderMember'][0])
         for user_dn in to_add:
@@ -1932,17 +1973,15 @@ class UsersDB(object):
             self.conn.modify_s(role_dn, (
                 (ldap.MOD_ADD, 'alternateLeader', [user_dn]),
             ))
-            uid = self._user_id(user_dn)
-            self.add_change_record(uid, SET_AS_ALTERNATE_ROLE_LEADER,
+            self.add_change_record(user_dn, SET_AS_ALTERNATE_ROLE_LEADER,
                                    {'role': role_id})
         for user_dn in to_remove:
             log.info("Removing %r as alternate for %r", user_dn, role_dn)
             self.conn.modify_s(role_dn, (
                 (ldap.MOD_DELETE, 'alternateLeader', [user_dn]),
             ))
-            uid = self._user_id(user_dn)
             self.add_change_record(
-                uid,
+                user_dn,
                 UNSET_AS_ALTERNATE_ROLE_LEADER, {'role': role_id})
 
     def _sub_roles_with_member(self, role_dn, member_dn):
@@ -2087,7 +2126,7 @@ class UsersDB(object):
         roles = sorted([self._role_id(x) for x in role_dn_list])
 
         for r in roles:
-            self.add_change_record(member_id, REMOVED_FROM_ROLE,
+            self.add_change_record(member_dn, REMOVED_FROM_ROLE,
                                 {'role': r, 'member_type': member_type})
         return map(self._role_id, role_dn_list)
 
