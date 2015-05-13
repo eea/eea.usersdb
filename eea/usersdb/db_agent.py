@@ -1326,7 +1326,7 @@ class UsersDB(object):
                  user_id_list, org_id)
 
         # record this change in the user's log
-        users = ((user_id, self._user_dn(user_id)) for user_id in user_id_list)
+        users = [(user_id, self._user_dn(user_id)) for user_id in user_id_list]
         org_dn = self._org_dn(org_id)
         for user_id, user_dn in users:
             self.add_change_record(user_dn, REMOVED_FROM_ORG, {
@@ -1335,7 +1335,7 @@ class UsersDB(object):
             self.add_change_record(org_dn, REMOVED_MEMBER_FROM_ORG,
                                    {'member': user_id})
 
-        user_dn_list = [user_dn for (user_dn, user_id) in users]
+        user_dn_list = [user_dn for (user_id, user_dn) in users]
         changes = ((ldap.MOD_DELETE, 'uniqueMember', user_dn_list), )
 
         # Check if any member remain, add placeholder value in
@@ -1343,7 +1343,6 @@ class UsersDB(object):
         if not (set(self.members_in_org(org_id)) - set(user_id_list)):
             changes = ((ldap.MOD_ADD, 'uniqueMember', ['']),) + changes
 
-        #import pdb; pdb.set_trace()
         result = self.conn.modify_s(org_dn, changes)
         assert result == (ldap.RES_MODIFY, [])
 
