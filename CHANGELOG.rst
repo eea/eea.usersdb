@@ -1,5 +1,7 @@
 1.3.27 (unreleased)
 ------------------------
+* Feature: allow recording an organisation changelog
+  [tiberich #20663]
 
 1.3.26 (2015-03-30)
 ------------------------
