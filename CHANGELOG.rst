@@ -1,3 +1,6 @@
+1.3.28 (unreleased)
+------------------------
+
 1.3.27 (2015-05-14)
 ------------------------
 * Feature: allow recording an organisation changelog
