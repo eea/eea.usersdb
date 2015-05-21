@@ -67,6 +67,7 @@ EIONET_USER_SCHEMA = {
     'url': 'labeledURI',
     'status': 'employeeType',
     'destinationIndicator': 'destinationIndicator',
+    'old_email': 'employeeNumber',
 }
 
 # actually operational ldap attributes
@@ -349,7 +350,12 @@ class UsersDB(object):
 
     def _unpack_user_info(self, dn, attr):
         out = {'dn': dn, 'id': self._user_id(dn, attr)}
-        unpack_these = dict(self.user_schema, **OPERATIONAL_SCHEMA)
+
+        unpack_these = {}
+        for d in (self.user_schema, OPERATIONAL_SCHEMA, DISABLE_USER_SCHEMA):
+            for k, v in d.items():
+                unpack_these[k] = v
+
         for name, ldap_name in unpack_these.iteritems():
             if ldap_name in attr:
                 if ldap_name.endswith('Timestamp'):
@@ -848,6 +854,17 @@ class UsersDB(object):
         if not diff:
             return
 
+
+
+        # result = self.conn.modify_s(
+        #     self._user_dn(user_id),
+        #     [
+        #         (ldap.MOD_REPLACE, 'employeeType', 'disabled'),
+        #         (ldap.MOD_REPLACE, 'mail', 'disabled@eionet.europa.eu'),
+        #     ]
+        # )
+
+
         log.info("Modifying info for user %r", user_id)
         for dn, modify_statements in diff.iteritems():
             result = self.conn.modify_s(dn, tuple(modify_statements))
@@ -1016,7 +1033,8 @@ class UsersDB(object):
         """
         try:
             result = self.conn.search_s(
-                rec_dn, ldap.SCOPE_BASE,
+                rec_dn,
+                ldap.SCOPE_BASE,
                 #filterstr='(objectClass=organizationalPerson)',
                 attrlist=(['*'] + DISABLE_USER_SCHEMA.values()))
         except ldap.NO_SUCH_OBJECT:
@@ -1070,18 +1088,36 @@ class UsersDB(object):
         old_records.append(record)
         self._save_metadata(rec_dn, old_records)
 
-    @log_ldap_exceptions
-    def get_email_for_disabled_user_dn(self, user_dn):
-        meta = self._get_metadata(user_dn)
-        # search for the last disable record that has an email address
+    def _get_email_for_disabled_user(self, metadata):
         email = None
         rec = None
-        for rec in reversed(meta):  # new info is always appended
+        # search for the last disable record that has an email address
+        for rec in reversed(metadata):  # new info is always appended
             if rec['action'] == DISABLE_ACCOUNT:
                 email = rec['data']['email']
                 break
 
         return email
+
+    @log_ldap_exceptions
+    def get_email_for_disabled_user_dn(self, user_dn):
+        metadata = self._get_metadata(user_dn)
+        return self._get_email_for_disabled_user(metadata)
+
+    @log_ldap_exceptions
+    def get_disabled_users(self):
+        """ Returns a list of user infos for users that have been disabled
+        """
+
+        result = self.conn.search_s(
+            self._user_dn_suffix, ldap.SCOPE_ONELEVEL,
+            filterstr=("(employeeType=disabled)"))
+
+        out = []
+        for user_dn, attr in result:
+            out.append(self._unpack_user_info(user_dn, attr))
+
+        return out
 
     @log_ldap_exceptions
     def enable_user(self, user_id):
