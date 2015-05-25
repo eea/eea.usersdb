@@ -1,3 +1,6 @@
+1.3.29 (unreleased)
+------------------------
+
 1.3.28 (2015-05-25)
 ------------------------
 * Change: no longer change emails for disabled users
