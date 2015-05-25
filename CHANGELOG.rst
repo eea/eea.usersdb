@@ -1,5 +1,7 @@
 1.3.28 (unreleased)
 ------------------------
+* Change: no longer change emails for disabled users
+  [tiberich #24321]
 
 1.3.27 (2015-05-14)
 ------------------------

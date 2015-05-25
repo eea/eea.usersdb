@@ -67,7 +67,6 @@ EIONET_USER_SCHEMA = {
     'url': 'labeledURI',
     'status': 'employeeType',
     'destinationIndicator': 'destinationIndicator',
-    'old_email': 'employeeNumber',
 }
 
 # actually operational ldap attributes
@@ -1015,7 +1014,7 @@ class UsersDB(object):
             self._user_dn(user_id),
             [
                 (ldap.MOD_REPLACE, 'employeeType', 'disabled'),
-                (ldap.MOD_REPLACE, 'mail', 'disabled@eionet.europa.eu'),
+                #(ldap.MOD_REPLACE, 'mail', 'disabled@eionet.europa.eu'),
             ]
         )
         assert result[:2] == (ldap.RES_MODIFY, [])
@@ -1136,11 +1135,11 @@ class UsersDB(object):
 
         # search for the last disable record that has an email address
         has_disable_record = False
-        email = ''
+        #email = ''
         rec = None
         for rec in reversed(meta):  # new info is always appended
             if rec['action'] == DISABLE_ACCOUNT:
-                email = rec['data']['email']
+                #email = rec['data']['email']
                 has_disable_record = True
                 break
 
@@ -1153,8 +1152,8 @@ class UsersDB(object):
             user_dn,
             [
                 (ldap.MOD_REPLACE, 'employeeType', 'enabled'),
-                (ldap.MOD_REPLACE, 'mail',
-                 email.encode('utf-8') or 'missing'),
+                # (ldap.MOD_REPLACE, 'mail',
+                #  email.encode('utf-8') or 'missing'),
             ]
         )
         assert result[:2] == (ldap.RES_MODIFY, [])
