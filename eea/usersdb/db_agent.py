@@ -66,7 +66,8 @@ EIONET_USER_SCHEMA = {
     'fax': 'facsimileTelephoneNumber',
     'url': 'labeledURI',
     'status': 'employeeType',
-    'destinationIndicator': 'destinationIndicator',
+    'destinationIndicator': 'destinationIndicator', # reason to create the account, mapped in the user interface edit form
+    'employeeNumber': 'pending_disable',    # date when user was informed that account will be disabled
 }
 
 # actually operational ldap attributes

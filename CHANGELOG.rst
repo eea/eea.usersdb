@@ -1,5 +1,6 @@
 1.3.29 (unreleased)
 ------------------------
+* Change: added a pending_disable user attribute, mapped to LDAP field employeeNumber
 
 1.3.28 (2015-05-25)
 ------------------------
