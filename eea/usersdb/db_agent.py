@@ -1165,13 +1165,22 @@ class UsersDB(object):
             self.add_to_org(org, [user_id])
 
         for role in data['roles']:
-            self.add_to_role(role, 'user', user_id)
+            try:
+                self.add_to_role(role, 'user', user_id)
+            except ValueError:  # role was probably removed
+                continue
 
         for role in data['roles_permittedPerson']:
-            self.add_permittedPerson(role, user_id)
+            try:
+                self.add_permittedPerson(role, user_id)
+            except ValueError:  # role was probably removed
+                continue
 
         for role in data['roles_owner']:
-            self.add_role_owner(role, user_id)
+            try:
+                self.add_role_owner(role, user_id)
+            except ValueError:  # role was probably removed
+                continue
 
     @log_ldap_exceptions
     def delete_user(self, user_id):
@@ -1867,6 +1876,10 @@ class UsersDB(object):
         role_dn = self._role_dn(role_id)
         log.info("Adding permittedPerson %r for %r", user_dn, role_dn)
 
+        result = self.conn.search_s(role_dn, ldap.SCOPE_BASE, attrlist=())
+        if len(result) < 1:
+            raise ValueError("DN not found: %r" % role_dn)
+
         self.conn.modify_s(role_dn, (
             (ldap.MOD_ADD, 'permittedPerson', [user_dn]),
         ))
@@ -1880,8 +1893,14 @@ class UsersDB(object):
         if not VALID_PERMITTEDSENDER(sender):
             raise InvalidPermittedSender(
                 "Invalid value for sender: %r" % sender)
+
         # TODO: validate `sender` token
         role_dn = self._role_dn(role_id)
+
+        result = self.conn.search_s(role_dn, ldap.SCOPE_BASE, attrlist=())
+        if len(result) < 1:
+            raise ValueError("DN not found: %r" % role_dn)
+
         log.info("Adding permittedSender %r for %r", sender, role_dn)
 
         self.conn.modify_s(role_dn, (

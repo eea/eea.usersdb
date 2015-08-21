@@ -1,6 +1,9 @@
-1.3.29 (unreleased)
+1.3.29 (2015-08-21)
 ------------------------
 * Change: added a pending_disable user attribute, mapped to LDAP field employeeNumber
+* Bug fix: when enabling a user, don't fail when re-adding to roles if any of
+  the roles has been removed
+  [tiberich #28191]
 
 1.3.28 (2015-05-25)
 ------------------------
