@@ -1,9 +1,6 @@
 import colander
 import phonenumbers
 
-#import re
-#from string import ascii_lowercase, digits
-
 INVALID_PHONE_MESSAGES = (
     ("Invalid telephone number. It must be written "
      "using international notation, starting with \"+\"."),
@@ -11,9 +8,10 @@ INVALID_PHONE_MESSAGES = (
      "country / area code provided. If you second check and believe "
      "the number is correct, please contact HelpDesk.")
 )
-INVALID_EMAIL = "Invalid email address"
+INVALID_EMAIL = "Invalid email format"
 
 NUMBER_FORMAT = phonenumbers.PhoneNumberFormat.INTERNATIONAL
+
 
 class PhoneNumber(colander.String):
     """PhoneNumber type for colander Node"""
@@ -34,6 +32,7 @@ class PhoneNumber(colander.String):
     def cstruct_children(self):
         return []
 
+
 def _phone_validator(node, value):
     """Check if provided number is possible number"""
     if not value:
@@ -48,6 +47,7 @@ def _phone_validator(node, value):
 
 INVALID_URL = "Invalid URL. It must begin with \"http://\" or \"https://\"."
 
+
 class UserInfoSchema(colander.MappingSchema):
     """
     Schema for Eionet LDAP user information. Can be used by front-end tools
@@ -55,26 +55,26 @@ class UserInfoSchema(colander.MappingSchema):
     library does very little validation of its own.
     """
 
-    first_name           = colander.SchemaNode(colander.String())
-    last_name            = colander.SchemaNode(colander.String())
+    first_name = colander.SchemaNode(colander.String())
+    last_name = colander.SchemaNode(colander.String())
     destinationIndicator = colander.SchemaNode(colander.String(), missing='')
-    job_title            = colander.SchemaNode(colander.String(), missing='')
-    email                = colander.SchemaNode(colander.String())
-    url                  = colander.SchemaNode(colander.String(), missing='')
-    postal_address       = colander.SchemaNode(colander.String(), missing='')
-    phone                = colander.SchemaNode(PhoneNumber(), missing='')
-    mobile               = colander.SchemaNode(PhoneNumber(), missing='')
-    fax                  = colander.SchemaNode(PhoneNumber(), missing='')
-    organisation         = colander.SchemaNode(colander.String(), missing='')
+    job_title = colander.SchemaNode(colander.String(), missing='')
+    email = colander.SchemaNode(colander.String())
+    url = colander.SchemaNode(colander.String(), missing='')
+    postal_address = colander.SchemaNode(colander.String(), missing='')
+    phone = colander.SchemaNode(PhoneNumber(), missing='')
+    mobile = colander.SchemaNode(PhoneNumber(), missing='')
+    fax = colander.SchemaNode(PhoneNumber(), missing='')
+    organisation = colander.SchemaNode(colander.String(), missing='')
 
 _url_validator = colander.Regex(r'^http[s]?\://', msg=INVALID_URL)
 UserInfoSchema.phone.validator = _phone_validator
 UserInfoSchema.mobile.validator = _phone_validator
 UserInfoSchema.fax.validator = _phone_validator
 # max length for domain name labels is 63 characters per RFC 1034
-UserInfoSchema.email.validator = colander.Regex(r"(?:^|\s)[-a-z-A-Z0-9_.']+@"
-                                 "(?:[-a-z-A-Z0-9]+\.)+[a-z-A-Z]{2,63}(?:\s|$)",
-                                 msg=INVALID_EMAIL)
+UserInfoSchema.email.validator = colander.Regex(
+    r"(?:^|\s)[-a-z-A-Z0-9_.']+@(?:[-a-z-A-Z0-9]+\.)+[a-z-A-Z]{2,63}(?:\s|$)",
+    msg=INVALID_EMAIL)
 UserInfoSchema.url.validator = _url_validator
 
 
