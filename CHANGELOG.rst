@@ -1,5 +1,6 @@
 1.3.30 (unreleased)
 ------------------------
+* update validation schema for email (max length for domain name) [dumitval]
 
 1.3.29 (2015-08-21)
 ------------------------

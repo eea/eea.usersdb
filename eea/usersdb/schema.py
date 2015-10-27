@@ -71,8 +71,9 @@ _url_validator = colander.Regex(r'^http[s]?\://', msg=INVALID_URL)
 UserInfoSchema.phone.validator = _phone_validator
 UserInfoSchema.mobile.validator = _phone_validator
 UserInfoSchema.fax.validator = _phone_validator
+# max length for domain name labels is 63 characters per RFC 1034
 UserInfoSchema.email.validator = colander.Regex(r"(?:^|\s)[-a-z-A-Z0-9_.']+@"
-                                 "(?:[-a-z-A-Z0-9]+\.)+[a-z-A-Z]{2,6}(?:\s|$)",
+                                 "(?:[-a-z-A-Z0-9]+\.)+[a-z-A-Z]{2,63}(?:\s|$)",
                                  msg=INVALID_EMAIL)
 UserInfoSchema.url.validator = _url_validator
 
