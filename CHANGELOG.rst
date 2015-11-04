@@ -1,4 +1,7 @@
-1.3.31 (unreleased)
+1.3.32 (unreleased)
+------------------------
+
+1.3.31 (2015-11-04)
 ------------------------
 * restore roles only on demand (when enabling users) [dumitval]
 
