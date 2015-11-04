@@ -1,5 +1,6 @@
 1.3.31 (unreleased)
 ------------------------
+* restore roles only on demand (when enabling users) [dumitval]
 
 1.3.30 (2015-10-27)
 ------------------------

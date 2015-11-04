@@ -66,8 +66,10 @@ EIONET_USER_SCHEMA = {
     'fax': 'facsimileTelephoneNumber',
     'url': 'labeledURI',
     'status': 'employeeType',
-    'destinationIndicator': 'destinationIndicator', # reason to create the account, mapped in the user interface edit form
-    'employeeNumber': 'pending_disable',    # date when user was informed that account will be disabled
+    # reason to create the account, mapped in the user interface edit form
+    'destinationIndicator': 'destinationIndicator',
+    # date when user was informed that account will be disabled
+    'employeeNumber': 'pending_disable',
 }
 
 # actually operational ldap attributes
@@ -164,12 +166,14 @@ def log_ldap_exceptions(func):
             raise
     return wrapper
 
+
 def generate_action_id():
     return "".join(random.sample(ascii_lowercase, 20))
 
 
 class StreamingLDAPObject(LDAPObject, ResultProcessor):
-    """ Useful in getting more results by bypassing results size restrictions"""
+    """ Useful in getting more results by bypassing
+        results size restrictions"""
     pass
 
 
@@ -416,7 +420,7 @@ class UsersDB(object):
         result = self.conn.search_s(
             query_dn, ldap.SCOPE_ONELEVEL,
             filterstr='(objectClass=groupOfUniqueNames)',
-            attrlist=('description','owner', 'permittedSender',
+            attrlist=('description', 'owner', 'permittedSender',
                       'permittedPerson', 'leaderMember', 'alternateLeader')
         )
 
@@ -425,7 +429,6 @@ class UsersDB(object):
             out[self._role_id(dn)] = self._unpack_role_info(attr)
 
         return out
-
 
     @log_ldap_exceptions
     def filter_roles(
@@ -854,8 +857,6 @@ class UsersDB(object):
         if not diff:
             return
 
-
-
         # result = self.conn.modify_s(
         #     self._user_dn(user_id),
         #     [
@@ -863,7 +864,6 @@ class UsersDB(object):
         #         (ldap.MOD_REPLACE, 'mail', 'disabled@eionet.europa.eu'),
         #     ]
         # )
-
 
         log.info("Modifying info for user %r", user_id)
         for dn, modify_statements in diff.iteritems():
@@ -979,7 +979,7 @@ class UsersDB(object):
 
         assert self._bound, "call `perform_bind` before `disable_user`"
         organisations = [self._org_id(org) for org in
-                            self.user_organisations(user_id)]
+                         self.user_organisations(user_id)]
         for org_id in organisations:
             self.remove_from_org(org_id, [user_id])
 
@@ -1015,7 +1015,7 @@ class UsersDB(object):
             self._user_dn(user_id),
             [
                 (ldap.MOD_REPLACE, 'employeeType', 'disabled'),
-                #(ldap.MOD_REPLACE, 'mail', 'disabled@eionet.europa.eu'),
+                # (ldap.MOD_REPLACE, 'mail', 'disabled@eionet.europa.eu'),
             ]
         )
         assert result[:2] == (ldap.RES_MODIFY, [])
@@ -1035,7 +1035,7 @@ class UsersDB(object):
             result = self.conn.search_s(
                 rec_dn,
                 ldap.SCOPE_BASE,
-                #filterstr='(objectClass=organizationalPerson)',
+                # filterstr='(objectClass=organizationalPerson)',
                 attrlist=(['*'] + DISABLE_USER_SCHEMA.values()))
         except ldap.NO_SUCH_OBJECT:
             raise UserNotFound("Record '%s' does not exist" % rec_dn)
@@ -1136,11 +1136,11 @@ class UsersDB(object):
 
         # search for the last disable record that has an email address
         has_disable_record = False
-        #email = ''
+        # email = ''
         rec = None
         for rec in reversed(meta):  # new info is always appended
             if rec['action'] == DISABLE_ACCOUNT:
-                #email = rec['data']['email']
+                # email = rec['data']['email']
                 has_disable_record = True
                 break
 
@@ -1240,7 +1240,6 @@ class UsersDB(object):
             attrs.append(
                 (self.org_schema[name], [value.encode(self._encoding)]))
 
-
         org_dn = self._org_dn(org_id)
         result = self.conn.add_s(org_dn, attrs)
 
@@ -1336,7 +1335,8 @@ class UsersDB(object):
         except ldap.NO_SUCH_OBJECT:
             return False
         except:
-            log.exception("Could not search for %s with org_dn", org_id, query_dn)
+            log.exception("Could not search for %s with org_dn", org_id,
+                          query_dn)
             return False
         return bool(result)
 
@@ -1346,11 +1346,13 @@ class UsersDB(object):
         log.info("Adding users %r to organisation %r", user_id_list, org_id)
 
         # record this change in the user's log
-        users = [(user_id, str(self._user_dn(user_id))) for user_id in user_id_list]
+        users = [(user_id, str(self._user_dn(user_id)))
+                 for user_id in user_id_list]
         org_dn = self._org_dn(org_id)
 
         for user_id, user_dn in users:
-            self.add_change_record(user_dn, ADD_TO_ORG, {'organisation': org_id})
+            self.add_change_record(user_dn, ADD_TO_ORG,
+                                   {'organisation': org_id})
             self.add_change_record(org_dn, ADDED_MEMBER_TO_ORG,
                                    {'member': user_id})
 
@@ -1609,7 +1611,8 @@ class UsersDB(object):
         """ Set the extended management flag for this role
         """
         assert self._bound, "call `perform_bind` before `set_role_description`"
-        log.info("Setting extended management description %r for role %r", is_extended, role_id)
+        log.info("Setting extended management description %r for role %r",
+                 is_extended, role_id)
 
         role_dn = self._role_dn(role_id)
         try:
@@ -2182,7 +2185,7 @@ class UsersDB(object):
 
         for r in roles:
             self.add_change_record(member_dn, REMOVED_FROM_ROLE,
-                                {'role': r, 'member_type': member_type})
+                                   {'role': r, 'member_type': member_type})
         return map(self._role_id, role_dn_list)
 
     @log_ldap_exceptions
@@ -2249,19 +2252,19 @@ class UsersDB(object):
     def _all_roles_list(self, parent_role_id=None):
         """ Returns a flat list of the role_id of all roles.
 
-        We're using the dequeu strategy of first-level lookups because of LDAP result
-        size limitations
+        We're using the dequeu strategy of first-level lookups because of
+        LDAP result size limitations
         """
         from collections import deque
         all_roles = []
 
         def child_roles(role_dn):
             return [x[0] for x in
-                        self.conn.search_s(
-                            role_dn,
-                            ldap.SCOPE_ONELEVEL,
-                            filterstr='(objectClass=groupOfUniqueNames)',
-                            attrlist=[]
+                    self.conn.search_s(
+                        role_dn,
+                        ldap.SCOPE_ONELEVEL,
+                        filterstr='(objectClass=groupOfUniqueNames)',
+                        attrlist=[]
                         )]
 
         if parent_role_id is not None:
@@ -2364,4 +2367,3 @@ class UsersDB(object):
         from zope.component import getUtility
         from naaya.ldapdump.interfaces import IDumpReader
         return getUtility(IDumpReader).get_dump()
-
