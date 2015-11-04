@@ -1120,7 +1120,7 @@ class UsersDB(object):
         return out
 
     @log_ldap_exceptions
-    def enable_user(self, user_id):
+    def enable_user(self, user_id, restore_roles=False):
         """ Enables the user, after it has been disabled
 
         It sets back the employeeType field to empty string.
@@ -1159,28 +1159,29 @@ class UsersDB(object):
         )
         assert result[:2] == (ldap.RES_MODIFY, [])
 
-        # add the user back to the organisations and roles that it had
-        data = rec['data']
-        for org in data['organisations']:
-            self.add_to_org(org, [user_id])
+        if restore_roles:
+            # add the user back to the organisations and roles that it had
+            data = rec['data']
+            for org in data['organisations']:
+                self.add_to_org(org, [user_id])
 
-        for role in data['roles']:
-            try:
-                self.add_to_role(role, 'user', user_id)
-            except ValueError:  # role was probably removed
-                continue
+            for role in data['roles']:
+                try:
+                    self.add_to_role(role, 'user', user_id)
+                except ValueError:  # role was probably removed
+                    continue
 
-        for role in data['roles_permittedPerson']:
-            try:
-                self.add_permittedPerson(role, user_id)
-            except ValueError:  # role was probably removed
-                continue
+            for role in data['roles_permittedPerson']:
+                try:
+                    self.add_permittedPerson(role, user_id)
+                except ValueError:  # role was probably removed
+                    continue
 
-        for role in data['roles_owner']:
-            try:
-                self.add_role_owner(role, user_id)
-            except ValueError:  # role was probably removed
-                continue
+            for role in data['roles_owner']:
+                try:
+                    self.add_role_owner(role, user_id)
+                except ValueError:  # role was probably removed
+                    continue
 
     @log_ldap_exceptions
     def delete_user(self, user_id):
