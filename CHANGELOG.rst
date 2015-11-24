@@ -1,4 +1,7 @@
-1.3.32 (unreleased)
+1.3.33 (unreleased)
+------------------------
+
+1.3.32 (2015-11-24)
 ------------------------
 * return empty set when searching for inexisting organisations [dumitval]
 
