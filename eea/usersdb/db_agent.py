@@ -646,7 +646,10 @@ class UsersDB(object):
         """
 
         query_dn = self._org_dn(org_id)
-        result = self.conn.search_s(query_dn, ldap.SCOPE_BASE)
+        try:
+            result = self.conn.search_s(query_dn, ldap.SCOPE_BASE)
+        except ldap.NO_SUCH_OBJECT:
+            result = [(query_dn, {})]
 
         assert len(result) == 1
         dn, attr = result[0]
@@ -2121,13 +2124,12 @@ class UsersDB(object):
           with the user as member
 
         """
-        from ldap import NO_SUCH_OBJECT
         try:
             result = self.conn.search_s(
                 member_dn, ldap.SCOPE_BASE, attrlist=())
             if len(result) < 1:
                 raise ValueError("DN not found: %r" % member_dn)
-        except NO_SUCH_OBJECT:
+        except ldap.NO_SUCH_OBJECT:
             log.info("User %s no longer in LDAP database. "
                      "The application will still try to remove it from the "
                      "specified role %s" % (member_dn, role_dn))

@@ -1,5 +1,6 @@
 1.3.32 (unreleased)
 ------------------------
+* return empty set when searching for inexisting organisations [dumitval]
 
 1.3.31 (2015-11-04)
 ------------------------
