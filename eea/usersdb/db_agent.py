@@ -57,6 +57,9 @@ EIONET_USER_SCHEMA = {
     'first_name': 'givenName',
     'last_name': 'sn',
     'full_name': 'cn',
+    'full_name_native': 'displayName',
+    # a field with ASCII transliterations of the name to assist search
+    'search_helper': 'businessCategory',
     'job_title': 'title',
     'email': 'mail',
     'phone': 'telephoneNumber',
