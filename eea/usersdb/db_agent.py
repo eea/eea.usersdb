@@ -118,6 +118,10 @@ ACCEPTED_SEARCH_FIELDS = {
         'label': 'Last name',
         'ldap_filter': '(sn=*%s*)',
     },
+    'ASCIIname': {
+        'label': 'ASCII name',
+        'ldap_filter': '(businessCategory=*%s*)',
+    },
     'mail': {
         'label': 'Email address',
         'ldap_filter': '(mail=*%s*)',
