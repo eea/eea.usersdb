@@ -122,6 +122,10 @@ ACCEPTED_SEARCH_FIELDS = {
         'label': 'ASCII name',
         'ldap_filter': '(businessCategory=*%s*)',
     },
+    'fullNameNative': {
+        'label': 'Full name (native language)',
+        'ldap_filter': '(displayName=*%s*)',
+    },
     'mail': {
         'label': 'Email address',
         'ldap_filter': '(mail=*%s*)',

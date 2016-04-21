@@ -1,5 +1,6 @@
 1.3.33 (unreleased)
 ------------------------
+* add name in native language to the searched fields [dumitval]
 * add name in native language and search helper to user details [dumitval]
 
 1.3.32 (2015-11-24)
