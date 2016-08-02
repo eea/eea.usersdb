@@ -65,6 +65,7 @@ EIONET_USER_SCHEMA = {
     'phone': 'telephoneNumber',
     'mobile': 'mobile',
     'organisation': 'o',
+    'department': 'departmentNumber',
     'postal_address': 'postalAddress',
     'fax': 'facsimileTelephoneNumber',
     'url': 'labeledURI',

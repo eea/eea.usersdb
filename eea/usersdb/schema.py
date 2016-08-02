@@ -68,6 +68,7 @@ class UserInfoSchema(colander.MappingSchema):
     mobile = colander.SchemaNode(PhoneNumber(), missing='')
     fax = colander.SchemaNode(PhoneNumber(), missing='')
     organisation = colander.SchemaNode(colander.String(), missing='')
+    department = colander.SchemaNode(colander.String(), missing='')
 
 _url_validator = colander.Regex(r'^http[s]?\://', msg=INVALID_URL)
 UserInfoSchema.phone.validator = _phone_validator
@@ -93,6 +94,7 @@ _description_map = {
     'mobile': "Mobile telephone number",
     'fax': "Fax number",
     'organisation': "Organisation",
+    'department': "Department",
     'destinationIndicator': "Reason to create the account",
 }
 
