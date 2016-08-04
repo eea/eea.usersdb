@@ -58,6 +58,7 @@ class UserInfoSchema(colander.MappingSchema):
     first_name = colander.SchemaNode(colander.String())
     last_name = colander.SchemaNode(colander.String())
     full_name_native = colander.SchemaNode(colander.String(), missing='')
+    search_helper = colander.SchemaNode(colander.String(), missing='')
     destinationIndicator = colander.SchemaNode(colander.String(), missing='')
     job_title = colander.SchemaNode(colander.String(), missing='')
     email = colander.SchemaNode(colander.String())
@@ -84,6 +85,7 @@ _description_map = {
     'first_name': "First name",
     'last_name': "Last name",
     'full_name_native': "Full name (native language)",
+    'search_helper': "ASCII search helper",
     'job_title': "Job title",
     'email': "E-mail",
     'url': "URL",
