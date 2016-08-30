@@ -1,5 +1,6 @@
 1.3.33 (unreleased)
 ------------------------
+* fix crash in validate_email for unicode addresses [dumitval]
 * add Department to the user details [dumitval]
 * add name in native language to the searched fields [dumitval]
 * add name in native language and search helper to user details [dumitval]

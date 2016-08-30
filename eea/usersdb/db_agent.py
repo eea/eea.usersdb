@@ -1672,7 +1672,11 @@ class UsersDB(object):
     def search_user_by_email(self, email, no_disabled=False):
         disabled_filter = no_disabled and "(!(employeeType=*disabled*))" or ''
 
-        query = email.encode(self._encoding)
+        try:
+            query = email.encode(self._encoding)
+        except UnicodeDecodeError:
+            # the email cannot be encoded so is likely not compliant
+            return []
         pattern = '(&(objectClass=person){0}(mail=%s))'.format(disabled_filter)
         query_filter = ldap.filter.filter_format(pattern, (query,))
 
