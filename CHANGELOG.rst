@@ -1,5 +1,7 @@
 1.3.33 (unreleased)
 ------------------------
+* make organisation, phone number and reason to create the account
+  mandatory when creating users [dumitval]
 * fix crash in validate_email for unicode addresses [dumitval]
 * add Department to the user details [dumitval]
 * add name in native language to the searched fields [dumitval]
