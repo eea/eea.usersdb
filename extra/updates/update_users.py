@@ -78,7 +78,7 @@ def connect(server):
 
 def main(server, write_password, password):
     conn = connect(server)
-    conn.simple_bind(write_access_user_dn, '***REMOVED***')
+    conn.simple_bind(write_access_user_dn, write_password)
     base_dn = "ou=Users,o=EIONET,l=Europe"
 
     search_cmd = search_users_cmd.format(server=server,
