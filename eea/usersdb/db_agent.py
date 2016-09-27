@@ -85,6 +85,7 @@ OPERATIONAL_SCHEMA = {
 
 EIONET_ORG_SCHEMA = {
     'name': 'o',
+    'name_native': 'physicalDeliveryOfficeName',
     'phone': 'telephoneNumber',
     'fax': 'facsimileTelephoneNumber',
     'url': 'labeledURI',
@@ -2255,10 +2256,12 @@ class UsersDB(object):
         result = self.conn.search_s(
             self._org_dn_suffix, ldap.SCOPE_ONELEVEL,
             filterstr='(objectClass=organizationGroup)',
-            attrlist=('o', 'c'))
+            attrlist=('o', 'c', 'physicalDeliveryOfficeName'))
 
         return dict((self._org_id(dn),
                      {'name': attr.get('o', [u""])[0].decode(self._encoding),
+                      'name_native': attr.get('physicalDeliveryOfficeName',
+                                              [u""])[0].decode(self._encoding),
                       'country':
                       attr.get('c', ['int']   # needs to be set to int,
                                # otherwise org doesn't

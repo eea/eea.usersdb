@@ -1,5 +1,6 @@
 1.3.33 (unreleased)
 ------------------------
+* add organisation name in national language [dumitval]
 * make organisation, phone number and reason to create the account
   mandatory when creating users [dumitval]
 * fix crash in validate_email for unicode addresses [dumitval]

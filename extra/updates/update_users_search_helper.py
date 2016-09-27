@@ -8,11 +8,10 @@ from unidecode import unidecode
 LDAP_TIMEOUT = 10
 
 search_users_cmd = ('ldapsearch -LLL -h {server} -s sub -D "{user_dn}" '
-                    '-w {password} -x -b {base_dn} dn')
+                    '-w {password} -x -b "{base_dn}" dn')
 
 no_limits_user_dn = "cn=Accounts Browser,o=EIONET,l=Europe"
 write_access_user_dn = "cn=Eionet Administrator,o=EIONET,l=Europe"
-server = 'oak.eea.europa.eu'
 
 
 class StreamingLDAPObject(LDAPObject, ResultProcessor):
@@ -91,7 +90,7 @@ def main(server, write_password, password):
     uids = [dn.split('uid=')[1].split(',')[0] for dn in dns]
     problem_uids = []
     modified = 0
-    for uid in uids[:10]:
+    for uid in uids:
         userdetails = conn.search_s(base_dn, 1, filterstr="(uid=%s)" % uid)
         user_dn = 'uid=%s,%s' % (uid, base_dn)
         full_name_native = userdetails[0][1].get('displayName', '')
@@ -118,9 +117,10 @@ def main(server, write_password, password):
 
 if __name__ == "__main__":
 
-    password = raw_input("Enter password for user '{}': ".format(
+    server = raw_input("Enter server address: ")
+    password = raw_input("Enter password for user '{0}': ".format(
                          no_limits_user_dn))
-    write_password = raw_input("Enter password for user '{}': ".format(
+    write_password = raw_input("Enter password for user '{0}': ".format(
                                write_access_user_dn))
 
     main(server, write_password, password)
