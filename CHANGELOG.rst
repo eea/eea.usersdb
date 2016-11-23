@@ -1,5 +1,6 @@
 1.3.34 (unreleased)
 ------------------------
+* add validator for first and last name [dumitval]
 
 1.3.33 (2016-10-03)
 ------------------------

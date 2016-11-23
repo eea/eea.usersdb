@@ -12,6 +12,7 @@ INVALID_EMAIL = "Invalid email format"
 
 NUMBER_FORMAT = phonenumbers.PhoneNumberFormat.INTERNATIONAL
 
+INVALID_STRING_ENCODING = ('%s must be written in latin characters')
 
 class PhoneNumber(colander.String):
     """PhoneNumber type for colander Node"""
@@ -45,6 +46,20 @@ def _phone_validator(node, value):
         if not phonenumbers.is_possible_number(number):
             raise colander.Invalid(node, INVALID_PHONE_MESSAGES[1])
 
+def _latin_validator(node, value):
+    """Check if provided string is written with latin-based characters"""
+    if not value:
+        return
+    for index in range(10):
+        set = index + 1
+        try:
+            value.encode('latin%s' % set)
+        except UnicodeEncodeError:
+            pass
+        else:
+            return
+    raise colander.Invalid(node, INVALID_STRING_ENCODING % node.description)
+
 INVALID_URL = "Invalid URL. It must begin with \"http://\" or \"https://\"."
 
 
@@ -71,6 +86,8 @@ class UserInfoSchema(colander.MappingSchema):
     department = colander.SchemaNode(colander.String(), missing='')
 
 _url_validator = colander.Regex(r'^http[s]?\://', msg=INVALID_URL)
+UserInfoSchema.first_name.validator = _latin_validator
+UserInfoSchema.last_name.validator = _latin_validator
 UserInfoSchema.phone.validator = _phone_validator
 UserInfoSchema.mobile.validator = _phone_validator
 UserInfoSchema.fax.validator = _phone_validator
