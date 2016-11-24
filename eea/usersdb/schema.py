@@ -50,15 +50,18 @@ def _latin_validator(node, value):
     """Check if provided string is written with latin-based characters"""
     if not value:
         return
-    for index in range(10):
-        set = index + 1
-        try:
-            value.encode('latin%s' % set)
-        except UnicodeEncodeError:
-            pass
+    for letter in value:
+        for index in range(1, 11):
+            try:
+                letter.encode('latin%s' % index)
+            except UnicodeEncodeError:
+                pass
+            else:
+                break
         else:
+            raise colander.Invalid(node,
+                                   INVALID_STRING_ENCODING % node.description)
             return
-    raise colander.Invalid(node, INVALID_STRING_ENCODING % node.description)
 
 INVALID_URL = "Invalid URL. It must begin with \"http://\" or \"https://\"."
 
