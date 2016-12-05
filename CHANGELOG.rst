@@ -1,4 +1,8 @@
-1.3.34 (unreleased)
+1.3.35 (unreleased)
+------------------------
+* added migration script for adding eionetAccount object class [dumitval]
+
+1.3.34 (2016-12-05)
 ------------------------
 * add validator for first and last name [dumitval]
 
