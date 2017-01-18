@@ -71,7 +71,7 @@ EIONET_USER_SCHEMA = {
     'url': 'labeledURI',
     'status': 'employeeType',
     # reason to create the account, mapped in the user interface edit form
-    'destinationIndicator': 'destinationIndicator',
+    'reasonToCreate': 'reasonToCreate',
     # date when user was informed that account will be disabled
     'employeeNumber': 'pending_disable',
 }
@@ -556,7 +556,7 @@ class UsersDB(object):
                         self._org_id,
                         filter(lambda x: x.endswith(self._org_dn_suffix),
                                mbs))
-                }
+            }
             parent = self._role_id_parent(dn)
             if parent and parent in roles:
                 roles[parent]['users'] = diff(roles[parent]['users'],
@@ -2285,8 +2285,8 @@ class UsersDB(object):
                         role_dn,
                         ldap.SCOPE_ONELEVEL,
                         filterstr='(objectClass=groupOfUniqueNames)',
-                        attrlist=[]
-                        )]
+                        attrlist=[])
+                    ]
 
         if parent_role_id is not None:
             root = self._role_dn(parent_role_id)

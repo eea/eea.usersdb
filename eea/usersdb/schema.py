@@ -14,6 +14,7 @@ NUMBER_FORMAT = phonenumbers.PhoneNumberFormat.INTERNATIONAL
 
 INVALID_STRING_ENCODING = ('%s must be written in latin characters')
 
+
 class PhoneNumber(colander.String):
     """PhoneNumber type for colander Node"""
 
@@ -46,6 +47,7 @@ def _phone_validator(node, value):
         if not phonenumbers.is_possible_number(number):
             raise colander.Invalid(node, INVALID_PHONE_MESSAGES[1])
 
+
 def _latin_validator(node, value):
     """Check if provided string is written with latin-based characters"""
     if not value:
@@ -77,7 +79,7 @@ class UserInfoSchema(colander.MappingSchema):
     last_name = colander.SchemaNode(colander.String())
     full_name_native = colander.SchemaNode(colander.String(), missing='')
     search_helper = colander.SchemaNode(colander.String(), missing='')
-    destinationIndicator = colander.SchemaNode(colander.String())
+    reasonToCreate = colander.SchemaNode(colander.String())
     job_title = colander.SchemaNode(colander.String(), missing='')
     email = colander.SchemaNode(colander.String())
     url = colander.SchemaNode(colander.String(), missing='')
@@ -115,7 +117,7 @@ _description_map = {
     'fax': "Fax number",
     'organisation': "Organisation",
     'department': "Department",
-    'destinationIndicator': "Reason to create the account",
+    'reasonToCreate': "Reason to create the account",
 }
 
 for name, description in _description_map.iteritems():

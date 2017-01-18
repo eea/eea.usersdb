@@ -1,5 +1,8 @@
 1.3.35 (unreleased)
 ------------------------
+* updates script to move data from destinationIndicator to
+  reasonToCreate [dumitval]
+* use the new field reasonToCreate instead of destinationIndicator [dumitval]
 * added migration script for adding eionetAccount object class [dumitval]
 
 1.3.34 (2016-12-05)
