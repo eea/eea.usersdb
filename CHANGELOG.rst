@@ -1,4 +1,7 @@
-1.3.35 (unreleased)
+1.3.36 (unreleased)
+------------------------
+
+1.3.35 (2017-01-18)
 ------------------------
 * updates script to move data from destinationIndicator to
   reasonToCreate [dumitval]
