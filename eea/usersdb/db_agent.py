@@ -766,7 +766,7 @@ class UsersDB(object):
 
         attrs = [
             ('objectClass', ['top', 'person', 'organizationalPerson',
-                             'inetOrgPerson']),
+                             'inetOrgPerson', 'eionetAccount']),
             ('uid', [new_user_id]),
         ]
         attr_dict = {'uid': new_user_id}

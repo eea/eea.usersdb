@@ -1,5 +1,6 @@
 1.3.36 (unreleased)
 ------------------------
+* bugfix in writing reasonToCreate to new users [dumitval]
 
 1.3.35 (2017-01-18)
 ------------------------

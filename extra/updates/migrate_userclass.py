@@ -14,7 +14,6 @@ objectClass: eionetAccount
 
 no_limits_user_dn = "cn=Accounts Browser,o=EIONET,l=Europe"
 write_access_user_dn = "cn=Eionet Administrator,o=EIONET,l=Europe"
-server = 'oak.eea.europa.eu'
 
 
 def main(server, write_password, password):
@@ -43,6 +42,7 @@ def main(server, write_password, password):
 
 if __name__ == "__main__":
 
+    server = raw_input("Enter server address: ")
     password = raw_input(
         "Enter password for user '{}': ".format(no_limits_user_dn))
     write_password = raw_input(
