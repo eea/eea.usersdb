@@ -658,6 +658,8 @@ class UsersDB(object):
         Returns a dictionary of organisation information for `org_id`.
         """
 
+        if isinstance(org_id, unicode):
+            org_id = org_id.encode('utf-8')
         query_dn = self._org_dn(org_id)
         try:
             result = self.conn.search_s(query_dn, ldap.SCOPE_BASE)
