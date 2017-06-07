@@ -1,4 +1,7 @@
-1.3.37 (unreleased)
+1.3.38 (unreleased)
+------------------------
+
+1.3.37 (2017-06-07)
 ------------------------
 * handle unicode organisation titles in org_info [dumitval]
 
