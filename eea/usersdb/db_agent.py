@@ -795,7 +795,7 @@ class UsersDB(object):
 
         except ldap.ALREADY_EXISTS:
             raise NameAlreadyExists("User %r already exists" % new_user_id)
-        assert result == (ldap.RES_ADD, [])
+        assert result[:2] == (ldap.RES_ADD, [])
 
     @log_ldap_exceptions
     def set_user_password(self, user_id, old_pw, new_pw):
@@ -886,7 +886,7 @@ class UsersDB(object):
         log.info("Modifying info for user %r", user_id)
         for dn, modify_statements in diff.iteritems():
             result = self.conn.modify_s(dn, tuple(modify_statements))
-            assert result == (ldap.RES_MODIFY, [])
+            assert result[:2] == (ldap.RES_MODIFY, [])
 
     def _org_info_diff(self, org_id, old_info, new_info):
         def pack(value):
@@ -1261,7 +1261,7 @@ class UsersDB(object):
         org_dn = self._org_dn(org_id)
         result = self.conn.add_s(org_dn, attrs)
 
-        assert result == (ldap.RES_ADD, [])
+        assert result[:2] == (ldap.RES_ADD, [])
 
         self.add_change_record(org_dn, CREATED_ORG, {})
 
@@ -1276,7 +1276,7 @@ class UsersDB(object):
             return
         org_dn = self._org_dn(org_id)
         result = self.conn.modify_s(org_dn, changes)
-        assert result == (ldap.RES_MODIFY, [])
+        assert result[:2] == (ldap.RES_MODIFY, [])
 
         self.add_change_record(org_dn, EDITED_ORG, {})
 
@@ -1316,7 +1316,7 @@ class UsersDB(object):
         changes = ((ldap.MOD_ADD, 'pendingUniqueMember', user_dn_list), )
 
         result = self.conn.modify_s(org_dn, changes)
-        assert result == (ldap.RES_MODIFY, [])
+        assert result[:2] == (ldap.RES_MODIFY, [])
 
     @log_ldap_exceptions
     def remove_pending_from_org(self, org_id, user_id_list):
@@ -1338,7 +1338,7 @@ class UsersDB(object):
         changes = ((ldap.MOD_DELETE, 'pendingUniqueMember', user_dn_list), )
 
         result = self.conn.modify_s(org_dn, changes)
-        assert result == (ldap.RES_MODIFY, [])
+        assert result[:2] == (ldap.RES_MODIFY, [])
 
     def org_exists(self, org_id):
         if not org_id:
@@ -1383,7 +1383,7 @@ class UsersDB(object):
             changes += ((ldap.MOD_DELETE, 'uniqueMember', ['']),)
 
         result = self.conn.modify_s(self._org_dn(org_id), changes)
-        assert result == (ldap.RES_MODIFY, [])
+        assert result[:2] == (ldap.RES_MODIFY, [])
 
     @log_ldap_exceptions
     def remove_from_org(self, org_id, user_id_list):
@@ -1410,7 +1410,7 @@ class UsersDB(object):
             changes = ((ldap.MOD_ADD, 'uniqueMember', ['']),) + changes
 
         result = self.conn.modify_s(org_dn, changes)
-        assert result == (ldap.RES_MODIFY, [])
+        assert result[:2] == (ldap.RES_MODIFY, [])
 
     @log_ldap_exceptions
     def rename_org(self, org_id, new_org_id):
@@ -1437,7 +1437,7 @@ class UsersDB(object):
                     (ldap.MOD_DELETE, 'uniqueMember', [org_dn]),
                     (ldap.MOD_ADD, 'uniqueMember', [new_org_dn]),
                 ))
-                assert mod_result == (ldap.RES_MODIFY, [])
+                assert mod_result[:2] == (ldap.RES_MODIFY, [])
         except:
             msg = ("Error while updating references to organisation "
                    "from %r to %r" % (org_dn, new_org_dn))
@@ -1488,7 +1488,7 @@ class UsersDB(object):
             raise ValueError("DN already exists (trying to create %r)"
                              % role_dn)
 
-        assert result == (ldap.RES_ADD, [])
+        assert result[:2] == (ldap.RES_ADD, [])
 
     def merge_roles(self, role_source, role_destination):
         subroles = sorted(self._sub_roles(role_source))
@@ -1597,7 +1597,7 @@ class UsersDB(object):
                     (ldap.MOD_DELETE, 'uniqueMember', [role_dn]),
                     (ldap.MOD_ADD, 'uniqueMember', [new_role_dn]),
                 ))
-                assert mod_result == (ldap.RES_MODIFY, [])
+                assert mod_result[:2] == (ldap.RES_MODIFY, [])
         except:
             msg = ("Error while updating references to role "
                    "from %r to %r" % (role_dn, new_role_dn))
@@ -1770,7 +1770,7 @@ class UsersDB(object):
         except ldap.NO_SUCH_ATTRIBUTE:
             pass  # so the group was not empty. that's fine.
         else:
-            assert result == (ldap.RES_MODIFY, [])
+            assert result[:2] == (ldap.RES_MODIFY, [])
             log.info("Removed placeholder uniqueMember from %r", role_dn)
 
     def _add_member_dn_to_role_dn(self, role_dn, member_dn):

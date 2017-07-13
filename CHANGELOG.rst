@@ -1,5 +1,6 @@
 1.3.38 (unreleased)
 ------------------------
+* adapted asserts to new python-ldap result format [dumitval]
 
 1.3.37 (2017-06-07)
 ------------------------
