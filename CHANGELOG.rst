@@ -1,5 +1,6 @@
 1.3.39 (unreleased)
 ------------------------
+* fix crash when org_id is invalid (contains forbidden chars) [dumitval]
 
 1.3.38 (2017-07-13)
 ------------------------

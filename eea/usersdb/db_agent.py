@@ -355,14 +355,16 @@ class UsersDB(object):
         if org_id is None:
             return self._org_dn_suffix
         else:
-            assert ',' not in org_id
+            if ',' in org_id:
+                log.error('Invalid LDAP organisation id %s' % org_id)
             return 'cn=' + org_id + ',' + self._org_dn_suffix
 
     def _org_id(self, org_dn):
         assert org_dn.endswith(',' + self._org_dn_suffix)
         assert org_dn.startswith('cn=')
         org_id = org_dn[len('cn='): - (len(self._org_dn_suffix) + 1)]
-        assert ',' not in org_id
+        if ',' in org_id:
+            log.error('Invalid LDAP organisation id %s' % org_id)
         return org_id
 
     def _unpack_user_info(self, dn, attr):
@@ -393,8 +395,12 @@ class UsersDB(object):
 
         return out
 
-    def _unpack_org_info(self, dn, attr):
-        out = {'dn': dn, 'id': self._org_id(dn)}
+    def _unpack_org_info(self, dn, attr, invalid=False):
+        if invalid:
+            out = {'dn': dn,
+                   'id': 'INVALID ORGANISATION %s' % self._org_id(dn)}
+        else:
+            out = {'dn': dn, 'id': self._org_id(dn)}
         for name, ldap_name in self.org_schema.iteritems():
             if ldap_name in attr:
                 out[name] = attr[ldap_name][0].decode(self._encoding)
@@ -661,15 +667,19 @@ class UsersDB(object):
         if isinstance(org_id, unicode):
             org_id = org_id.encode('utf-8')
         query_dn = self._org_dn(org_id)
+        invalid = False
         try:
             result = self.conn.search_s(query_dn, ldap.SCOPE_BASE)
         except ldap.NO_SUCH_OBJECT:
+            result = [(query_dn, {})]
+        except ldap.INVALID_DN_SYNTAX:
+            invalid = True
             result = [(query_dn, {})]
 
         assert len(result) == 1
         dn, attr = result[0]
         assert dn == query_dn
-        return self._unpack_org_info(dn, attr)
+        return self._unpack_org_info(dn, attr, invalid=invalid)
 
     @log_ldap_exceptions
     def role_info(self, role_id):
