@@ -81,6 +81,7 @@ OPERATIONAL_SCHEMA = {
     'uid': 'uid',  # place it here, since not editable
     'createTimestamp': 'createTimestamp',
     'modifyTimestamp': 'modifyTimestamp',
+    'pwdChangedTime': 'pwdChangedTime',
 }
 
 EIONET_ORG_SCHEMA = {

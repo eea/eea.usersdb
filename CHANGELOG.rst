@@ -1,5 +1,6 @@
 1.3.40 (unreleased)
 ------------------------
+* added pwdChangedTime to operational schema refs #92555 [dumitval]
 
 1.3.39 (2017-12-04)
 ------------------------
