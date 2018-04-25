@@ -2266,10 +2266,18 @@ class UsersDB(object):
 
     @log_ldap_exceptions
     def all_organisations(self):
-        result = self.conn.search_s(
-            self._org_dn_suffix, ldap.SCOPE_ONELEVEL,
-            filterstr='(objectClass=organizationGroup)',
-            attrlist=('o', 'c', 'physicalDeliveryOfficeName'))
+        try:
+            result = self.conn.search_s(
+                self._org_dn_suffix, ldap.SCOPE_ONELEVEL,
+                filterstr='(objectClass=organizationGroup)',
+                attrlist=('o', 'c', 'physicalDeliveryOfficeName'))
+            print result
+        except ldap.SIZELIMIT_EXCEEDED:
+            result = self.conn.search_ext(
+                self._org_dn_suffix, ldap.SCOPE_ONELEVEL,
+                filterstr='(objectClass=organizationGroup)',
+                attrlist=('o', 'c', 'physicalDeliveryOfficeName'),
+                sizelimit=100)
 
         return dict((self._org_id(dn),
                      {'name': attr.get('o', [u""])[0].decode(self._encoding),
