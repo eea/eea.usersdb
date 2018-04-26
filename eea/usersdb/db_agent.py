@@ -2273,7 +2273,7 @@ class UsersDB(object):
                 attrlist=('o', 'c', 'physicalDeliveryOfficeName'))
             print result
         except ldap.SIZELIMIT_EXCEEDED:
-            result = self.conn.search_ext(
+            result = self.conn.search_ext_s(
                 self._org_dn_suffix, ldap.SCOPE_ONELEVEL,
                 filterstr='(objectClass=organizationGroup)',
                 attrlist=('o', 'c', 'physicalDeliveryOfficeName'),
