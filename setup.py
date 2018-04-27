@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='eea.usersdb',
-    version='1.3.43',
+    version='1.3.44',
     author='Eau de Web',
     author_email='office@eaudeweb.ro',
     packages=find_packages(),
