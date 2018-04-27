@@ -2,6 +2,7 @@ from _backport import wraps
 from datetime import datetime
 from ldap.ldapobject import LDAPObject
 from ldap.resiter import ResultProcessor
+from ldap import asyncsearch
 from string import ascii_lowercase, digits, ascii_letters
 import contextlib
 import json
@@ -2273,12 +2274,19 @@ class UsersDB(object):
                 attrlist=('o', 'c', 'physicalDeliveryOfficeName'))
             print result
         except ldap.SIZELIMIT_EXCEEDED:
-            result = self.conn.search_ext_s(
-                self._org_dn_suffix, ldap.SCOPE_ONELEVEL,
-                filterstr='(objectClass=organizationGroup)',
-                attrlist=('o', 'c', 'physicalDeliveryOfficeName'),
-                sizelimit=100)
-
+            s = asyncsearch.List(
+                self.conn,
+            )
+            s.startSearch(
+                self._org_dn_suffix,
+                ldap.SCOPE_SUBTREE,
+                '(objectClass=organizationGroup)',
+            )
+            try:
+                partial = s.processResults()
+            except ldap.SIZELIMIT_EXCEEDED:
+                pass
+            result = [element[1] for element in s.allResults]
         return dict((self._org_id(dn),
                      {'name': attr.get('o', [u""])[0].decode(self._encoding),
                       'name_native': attr.get('physicalDeliveryOfficeName',
