@@ -67,6 +67,12 @@ def _latin_validator(node, value):
 
 INVALID_URL = "Invalid URL. It must begin with \"http://\" or \"https://\"."
 
+# max length for domain name labels is 63 characters per RFC 1034
+_url_validator = colander.Regex(r'^http[s]?\://', msg=INVALID_URL)
+_email_validator = colander.Regex(
+    r"(?:^|\s)[-a-z-A-Z0-9_.']+@(?:[-a-z-A-Z0-9]+\.)+[a-z-A-Z]{2,63}(?:\s|$)",
+    msg=INVALID_EMAIL)
+
 
 class UserInfoSchema(colander.MappingSchema):
     """
@@ -75,53 +81,40 @@ class UserInfoSchema(colander.MappingSchema):
     library does very little validation of its own.
     """
 
-    first_name = colander.SchemaNode(colander.String())
-    last_name = colander.SchemaNode(colander.String())
-    full_name_native = colander.SchemaNode(colander.String(), missing='')
-    search_helper = colander.SchemaNode(colander.String(), missing='')
-    reasonToCreate = colander.SchemaNode(colander.String())
-    job_title = colander.SchemaNode(colander.String(), missing='')
-    email = colander.SchemaNode(colander.String())
-    url = colander.SchemaNode(colander.String(), missing='')
-    postal_address = colander.SchemaNode(colander.String(), missing='')
-    phone = colander.SchemaNode(PhoneNumber())
-    mobile = colander.SchemaNode(PhoneNumber(), missing='')
-    fax = colander.SchemaNode(PhoneNumber(), missing='')
-    organisation = colander.SchemaNode(colander.String())
-    department = colander.SchemaNode(colander.String(), missing='')
-
-_url_validator = colander.Regex(r'^http[s]?\://', msg=INVALID_URL)
-UserInfoSchema.first_name.validator = _latin_validator
-UserInfoSchema.last_name.validator = _latin_validator
-UserInfoSchema.phone.validator = _phone_validator
-UserInfoSchema.mobile.validator = _phone_validator
-UserInfoSchema.fax.validator = _phone_validator
-# max length for domain name labels is 63 characters per RFC 1034
-UserInfoSchema.email.validator = colander.Regex(
-    r"(?:^|\s)[-a-z-A-Z0-9_.']+@(?:[-a-z-A-Z0-9]+\.)+[a-z-A-Z]{2,63}(?:\s|$)",
-    msg=INVALID_EMAIL)
-UserInfoSchema.url.validator = _url_validator
-
-
-_description_map = {
-    'first_name': "First name",
-    'last_name': "Last name",
-    'full_name_native': "Full name (native language)",
-    'search_helper': "ASCII search helper",
-    'job_title': "Job title",
-    'email': "E-mail",
-    'url': "URL",
-    'postal_address': "Postal address",
-    'phone': "Telephone number",
-    'mobile': "Mobile telephone number",
-    'fax': "Fax number",
-    'organisation': "Organisation",
-    'department': "Department",
-    'reasonToCreate': "Reason to create the account",
-}
-
-for name, description in _description_map.iteritems():
-    getattr(UserInfoSchema, name).description = description
+    first_name = colander.SchemaNode(
+        colander.String(), validator=_latin_validator,
+        description='First name')
+    last_name = colander.SchemaNode(
+        colander.String(), validator=_latin_validator, description='Last name')
+    full_name_native = colander.SchemaNode(
+        colander.String(), missing='', validator=_latin_validator,
+        description='Full name (native language)')
+    search_helper = colander.SchemaNode(
+        colander.String(), missing='', description='ASCII search helper')
+    reasonToCreate = colander.SchemaNode(
+        colander.String(), description='Reason to create the account')
+    job_title = colander.SchemaNode(
+        colander.String(), missing='', description='Job title')
+    email = colander.SchemaNode(
+        colander.String(), validator=_email_validator, description='E-mail')
+    url = colander.SchemaNode(
+        colander.String(), missing='', validator=_url_validator,
+        description='URL')
+    postal_address = colander.SchemaNode(
+        colander.String(), missing='', description='Postal address')
+    phone = colander.SchemaNode(
+        PhoneNumber(), validator=_phone_validator,
+        description='Telephone number')
+    mobile = colander.SchemaNode(
+        PhoneNumber(), missing='', validator=_phone_validator,
+        description='Mobile telephone number')
+    fax = colander.SchemaNode(
+        PhoneNumber(), missing='', validator=_phone_validator,
+        description='Fax number')
+    organisation = colander.SchemaNode(
+        colander.String(), description='Organisation')
+    department = colander.SchemaNode(
+        colander.String(), missing='', description='Department')
 
 user_info_schema = UserInfoSchema()
 
