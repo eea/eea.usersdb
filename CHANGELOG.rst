@@ -1,4 +1,7 @@
-1.3.44 (unreleased)
+1.3.45 (unreleased)
+------------------------
+
+1.3.44 (2019-03-19)
 ------------------------
 * use config also when agent_from_site is called [dumitval]
 
