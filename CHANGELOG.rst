@@ -1,5 +1,6 @@
 1.3.44 (unreleased)
 ------------------------
+* use config also when agent_from_site is called [dumitval]
 
 1.3.43 (2018-04-27)
 ------------------------

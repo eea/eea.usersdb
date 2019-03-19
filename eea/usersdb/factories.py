@@ -14,7 +14,7 @@ def agent_from_uf(ldap_folder, **config):
         # Leave eea.userdb defaults
         pass
     db = UsersDB(**config)
-    if config.get('bind') == True:
+    if config.get('bind') is True:
         user_dn, user_pwd = config.get('user_dn'), config.get('user_pw', '')
         if not user_dn:
             user = getSecurityManager().getUser()
@@ -29,8 +29,9 @@ def agent_from_uf(ldap_folder, **config):
         db.perform_bind(user_dn, user_pwd)
     return db
 
+
 def agent_from_site(site, **config):
     """ Get agent instance based on a Naaya site with ldap user source """
     source = site.getAuthenticationTool().getSources()[0]
     ldap_folder = source.getUserFolder()
-    return agent_from_uf(ldap_folder)
+    return agent_from_uf(ldap_folder, **config)
