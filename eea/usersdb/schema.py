@@ -31,7 +31,7 @@ class PhoneNumber(colander.String):
         else:
             return phonenumbers.format_number(number, NUMBER_FORMAT)
 
-    def cstruct_children(self):
+    def cstruct_children(self, *args):
         return []
 
 
