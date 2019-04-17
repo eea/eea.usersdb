@@ -4,8 +4,8 @@ import subprocess
 
 search_orgs_cmd = 'ldapsearch -LLL -h {server} -s sub -D "{user_dn}" '\
     '-w {password} -x -b {base_dn} dn'
-modify_cmd = 'ldapmodify -x -c -h {server} -D "{user_dn}" -w {password}'\
-    ' -f /tmp/out.ldiff'
+modify_cmd = 'ldapmodify -x -c -h {server} -D "{user_dn}" -w {password} '\
+    '-f /tmp/out.ldiff'
 
 operation = """{dn}
 changetype: modify
