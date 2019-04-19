@@ -76,7 +76,13 @@ pipeline {
 
           "JS Lint": {
             node(label: 'docker') {
-              sh '''docker run -i --rm --name="$BUILD_TAG-jslint" -e GIT_SRC="https://github.com/eea/$GIT_NAME.git" -e GIT_NAME="$GIT_NAME" -e GIT_BRANCH="$BRANCH_NAME" -e GIT_CHANGE_ID="$CHANGE_ID" eeacms/jslint4java'''
+              script {
+                try {
+                  sh '''docker run -i --rm --name="$BUILD_TAG-jslint" -e GIT_SRC="https://github.com/eea/$GIT_NAME.git" -e GIT_NAME="$GIT_NAME" -e GIT_BRANCH="$BRANCH_NAME" -e GIT_CHANGE_ID="$CHANGE_ID" eeacms/jslint4java'''
+                } catch (err) {
+                  echo "Unstable: ${err}"
+                }
+              }
             }
           },
 
@@ -113,10 +119,6 @@ pipeline {
         node(label: 'swarm') {
           script{
             checkout scm
-            dir("xunit-reports") {
-              unstash "xunit-reports"
-            }
-            unstash "coverage.xml"
             def scannerHome = tool 'SonarQubeScanner';
             def nodeJS = tool 'NodeJS11';
             withSonarQubeEnv('Sonarqube') {
@@ -129,7 +131,7 @@ pipeline {
       }
     }
 
-    stage('Pull Request') {
+/*    stage('Pull Request') {
       when {
         not {
           environment name: 'CHANGE_ID', value: ''
@@ -164,7 +166,7 @@ pipeline {
           }
         }
       }
-    }
+    }*/
 
   }
 
