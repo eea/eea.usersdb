@@ -136,8 +136,8 @@ ACCEPTED_SEARCH_FIELDS = {
 }
 
 
-def VALID_PERMITTEDSENDER(x): return x in (
-    'owners', 'members', 'anyone') or '@'in x
+def VALID_PERMITTEDSENDER(x):
+    return x in ('owners', 'members', 'anyone') or '@'in x
 
 
 class InvalidPermittedSender(Exception):
