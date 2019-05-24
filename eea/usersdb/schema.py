@@ -65,6 +65,7 @@ def _latin_validator(node, value):
                                    INVALID_STRING_ENCODING % node.description)
             return
 
+
 INVALID_URL = "Invalid URL. It must begin with \"http://\" or \"https://\"."
 
 
@@ -84,11 +85,12 @@ class UserInfoSchema(colander.MappingSchema):
     email = colander.SchemaNode(colander.String())
     url = colander.SchemaNode(colander.String(), missing='')
     postal_address = colander.SchemaNode(colander.String(), missing='')
-    phone = colander.SchemaNode(PhoneNumber())
+    phone = colander.SchemaNode(PhoneNumber(), missing='')
     mobile = colander.SchemaNode(PhoneNumber(), missing='')
     fax = colander.SchemaNode(PhoneNumber(), missing='')
     organisation = colander.SchemaNode(colander.String())
     department = colander.SchemaNode(colander.String(), missing='')
+
 
 _url_validator = colander.Regex(r'^http[s]?\://', msg=INVALID_URL)
 UserInfoSchema.first_name.validator = _latin_validator
