@@ -65,6 +65,7 @@ def _latin_validator(node, value):
                                    INVALID_STRING_ENCODING % node.description)
             return
 
+
 INVALID_URL = "Invalid URL. It must begin with \"http://\" or \"https://\"."
 
 # max length for domain name labels is 63 characters per RFC 1034
@@ -103,7 +104,7 @@ class UserInfoSchema(colander.MappingSchema):
     postal_address = colander.SchemaNode(
         colander.String(), missing='', description='Postal address')
     phone = colander.SchemaNode(
-        PhoneNumber(), validator=_phone_validator,
+        PhoneNumber(), missing='', validator=_phone_validator,
         description='Telephone number')
     mobile = colander.SchemaNode(
         PhoneNumber(), missing='', validator=_phone_validator,
@@ -115,6 +116,7 @@ class UserInfoSchema(colander.MappingSchema):
         colander.String(), description='Organisation')
     department = colander.SchemaNode(
         colander.String(), missing='', description='Department')
+
 
 user_info_schema = UserInfoSchema()
 

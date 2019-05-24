@@ -1,5 +1,6 @@
 1.3.44 (unreleased)
 ------------------------
+* telephone is no longer mandatory [dumitval]
 * fix for newer chameleon version [dumitval]
 
 1.3.43 (2018-04-27)
