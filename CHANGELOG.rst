@@ -1,4 +1,7 @@
-1.3.45 (unreleased)
+1.3.46 (unreleased)
+------------------------
+
+1.3.45 (2019-06-19)
 ------------------------
 * Telephone is no longer mandatory [dumitval]
 
