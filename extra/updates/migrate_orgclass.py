@@ -1,6 +1,7 @@
 #!/usr/bin/python2.7
 
 import subprocess
+from six.moves import input
 
 search_orgs_cmd = 'ldapsearch -LLL -h {server} -s sub -D "{user_dn}" '\
     '-w {password} -x -b {base_dn} dn'
@@ -59,9 +60,9 @@ if __name__ == "__main__":
     # server = args.server
     # user_dn = args.user_dn
 
-    password = raw_input(
+    password = input(
         "Enter password for user '{}': ".format(no_limits_user_dn))
-    write_password = raw_input(
+    write_password = input(
         "Enter password for user '{}': ".format(write_access_user_dn))
 
     main(server, write_password, password)

@@ -1,7 +1,9 @@
+from __future__ import print_function
 import subprocess
 import ldap
 from ldap.ldapobject import LDAPObject
 from ldap.resiter import ResultProcessor
+from six.moves import input
 
 LDAP_TIMEOUT = 10
 
@@ -70,20 +72,20 @@ def main(server, write_password, password):
             conn.modify_s(org_dn, [
                 (ldap.MOD_REPLACE, 'physicalDeliveryOfficeName', org_title)
                 ])
-            print 'Modified organisation %s: %s' % (oid, org_title)
+            print('Modified organisation %s: %s' % (oid, org_title))
             modified += 1
-        except ldap.UNAVAILABLE_CRITICAL_EXTENSION, e:
+        except ldap.UNAVAILABLE_CRITICAL_EXTENSION as e:
             problem_oids.append((oid, e))
 
-    print 'Modified %s users' % modified
-    print problem_oids
+    print('Modified %s users' % modified)
+    print(problem_oids)
 
 if __name__ == "__main__":
 
-    server = raw_input("Enter server address: ")
-    password = raw_input("Enter password for user '{0}': ".format(
+    server = input("Enter server address: ")
+    password = input("Enter password for user '{0}': ".format(
                          no_limits_user_dn))
-    write_password = raw_input("Enter password for user '{0}': ".format(
+    write_password = input("Enter password for user '{0}': ".format(
                                write_access_user_dn))
 
     main(server, write_password, password)

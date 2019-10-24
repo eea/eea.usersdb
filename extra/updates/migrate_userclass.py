@@ -1,6 +1,7 @@
 #!/usr/bin/python2.7
 
 import subprocess
+from six.moves import input
 
 search_users_cmd = 'ldapsearch -LLL -h {server} -s sub -D "{user_dn}" '\
     '-w {password} -x -b {base_dn} dn'
@@ -44,10 +45,10 @@ def main(server, write_password, password):
 
 if __name__ == "__main__":
 
-    server = raw_input("Enter server address: ")
-    password = raw_input(
+    server = input("Enter server address: ")
+    password = input(
         "Enter password for user '{}': ".format(no_limits_user_dn))
-    write_password = raw_input(
+    write_password = input(
         "Enter password for user '{}': ".format(write_access_user_dn))
 
     main(server, write_password, password)

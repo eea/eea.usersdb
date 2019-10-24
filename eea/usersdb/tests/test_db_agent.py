@@ -7,6 +7,8 @@ import ldap
 from eea.usersdb import db_agent
 from mock import Mock
 from mock_recorder import Recorder
+import six
+from six.moves import map
 
 
 class StubbedUsersDB(db_agent.UsersDB):
@@ -32,7 +34,7 @@ class UsersDBTest(unittest.TestCase):
             '12': 'uid=12,ou=Users,o=EIONET,l=Europe',
             '-': 'uid=-,ou=Users,o=EIONET,l=Europe',
         }
-        for user_id, user_dn in user_values.iteritems():
+        for user_id, user_dn in six.iteritems(user_values):
             assert self.db._user_dn(user_id) == user_dn
             assert self.db._user_id(user_dn) == user_id
         bad_user_dns = [
@@ -52,7 +54,7 @@ class UsersDBTest(unittest.TestCase):
             '12': 'cn=12,ou=Organisations,o=EIONET,l=Europe',
             '-': 'cn=-,ou=Organisations,o=EIONET,l=Europe',
         }
-        for org_id, org_dn in org_values.iteritems():
+        for org_id, org_dn in six.iteritems(org_values):
             assert self.db._org_dn(org_id) == org_dn
             assert self.db._org_id(org_dn) == org_id
         bad_org_dns = [
@@ -78,7 +80,7 @@ class UsersDBTest(unittest.TestCase):
                                  'ou=Roles,o=EIONET,l=Europe'),
             None: 'ou=Roles,o=EIONET,l=Europe',
         }
-        for role_id, role_dn in role_values.iteritems():
+        for role_id, role_dn in six.iteritems(role_values):
             assert self.db._role_dn(role_id) == role_dn
             assert self.db._role_id(role_dn) == role_id
         bad_role_dns = [
@@ -230,7 +232,7 @@ class UsersDBTest(unittest.TestCase):
 
         user_info = self.db.user_info('jsmith')
 
-        for name, value in user_info.iteritems():
+        for name, value in six.iteritems(user_info):
             if name == 'email':
                 self.assertEqual(value, u"jsmith@example.com")
             elif name in ('dn', 'id'):
@@ -285,7 +287,7 @@ class UsersDBTest(unittest.TestCase):
                         'X-YADF-Z', 'X-Y-ZE']
         ret = [(self.db._role_dn(role_id), {}) for role_id in role_id_list]
 
-        for pattern, expected_ids in expected_results.iteritems():
+        for pattern, expected_ids in six.iteritems(expected_results):
             self.mock_conn.search_s = Mock(return_value=deepcopy(ret))
             result = self.db.filter_roles(pattern)
             self.mock_conn.search_s.assert_called_once_with(
@@ -510,8 +512,8 @@ class TestCreateRole(unittest.TestCase):
     def test_ancestor_roles_dn(self):
         role_dn = self.db._role_dn("a-b-c-d-e")
         lst = self.db._ancestor_roles_dn(role_dn)
-        self.assertEqual(map(self.db._role_dn, ["a-b-c-d-e", "a-b-c-d",
-                                                "a-b-c", "a-b", "a"]), lst)
+        self.assertEqual(list(map(self.db._role_dn, ["a-b-c-d-e", "a-b-c-d",
+                                                "a-b-c", "a-b", "a"])), lst)
 
 
 class TestAddToRole(unittest.TestCase):
@@ -709,7 +711,7 @@ class OrganisationsTest(unittest.TestCase):
                                         dn=bridge_club_dn,
                                         id='bridge_club'))
         for name in org_info_fixture:
-            assert type(org_info[name]) is unicode
+            assert type(org_info[name]) is six.text_type
 
     def test_create_organisation(self):
         self.db._bound = True
@@ -1060,7 +1062,7 @@ class LdapAgentUserEditingTest(unittest.TestCase):
         old_jsmith_ldap = {}
         ldap_mod_statements = []
         new_info = {}
-        for name, ldap_name in EIONET_USER_SCHEMA.iteritems():
+        for name, ldap_name in six.iteritems(EIONET_USER_SCHEMA):
             old_jsmith_ldap[ldap_name] = [testvalue('one', name)]
             new_value = testvalue('two', name)
             ldap_mod_statements += [(ldap.MOD_REPLACE, ldap_name, [new_value])]

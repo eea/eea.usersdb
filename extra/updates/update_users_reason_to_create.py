@@ -1,7 +1,9 @@
+from __future__ import print_function
 import subprocess
 import ldap
 from ldap.ldapobject import LDAPObject
 from ldap.resiter import ResultProcessor
+from six.moves import input
 
 LDAP_TIMEOUT = 10
 
@@ -66,21 +68,21 @@ def main(server, write_password, password):
                               [(ldap.MOD_REPLACE,
                                 'reasonToCreate',
                                 destinationIndicator)])
-                print 'Modified user %s: reasonToCreate: %s' % (
-                    uid, destinationIndicator)
+                print('Modified user %s: reasonToCreate: %s' % (
+                    uid, destinationIndicator))
                 modified += 1
-            except ldap.UNAVAILABLE_CRITICAL_EXTENSION, e:
+            except ldap.UNAVAILABLE_CRITICAL_EXTENSION as e:
                 problem_uids.append((uid, e))
 
-    print 'Modified %s users' % modified
-    print problem_uids
+    print('Modified %s users' % modified)
+    print(problem_uids)
 
 if __name__ == "__main__":
 
-    server = raw_input("Enter server address: ")
-    password = raw_input("Enter password for user '{0}': ".format(
+    server = input("Enter server address: ")
+    password = input("Enter password for user '{0}': ".format(
                          no_limits_user_dn))
-    write_password = raw_input("Enter password for user '{0}': ".format(
+    write_password = input("Enter password for user '{0}': ".format(
                                write_access_user_dn))
 
     main(server, write_password, password)

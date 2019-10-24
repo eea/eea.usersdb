@@ -1,5 +1,6 @@
 import colander
 import phonenumbers
+from six.moves import range
 
 INVALID_PHONE_MESSAGES = (
     ("Invalid telephone number. It must be written "
