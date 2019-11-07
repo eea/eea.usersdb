@@ -1,4 +1,7 @@
-1.3.46 (unreleased)
+1.3.47 (unreleased)
+------------------------
+
+1.3.46 (2019-11-07)
 ------------------------
 * compatibility with new colander version [dumitval]
 
