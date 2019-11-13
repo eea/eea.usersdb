@@ -20,11 +20,14 @@ def agent_from_uf(ldap_folder, **config):
     if config.get('bind') is True:
         user_dn, user_pwd = config.get('user_dn'), config.get('user_pw', '')
         if not user_dn:
-            user = getSecurityManager().getUser()
+            user = getSecurityManager().getUser() # get plone user
             # import pdb; pdb.set_trace() got rid of LDAPUser, not tested
+            user_sheet = user.getPropertysheet('pasldap')
+            user_object = sheet._get_ldap_principal()
             try:
-                user_dn = user.getUserDN()
-                user_pwd = user._getPassword()
+                # user_dn = user.getUserDN()
+                user_dn = user_object.context._dn
+                user_pwd = user._getPassword() # need replacement ?
                 if not user_pwd or user_pwd == 'undef':
                     # import pdb; pdb.set_trace() not tested here
                     # This user object did not result from a login
