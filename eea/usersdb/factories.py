@@ -18,23 +18,15 @@ def agent_from_uf(ldap_folder, **config):
         pass
     db = UsersDB(**config)
     if config.get('bind') is True:
-        # import pdb; pdb.set_trace()
         user_dn, user_pwd = config.get('user_dn'), config.get('user_pw', '')
         if not user_dn:
             user = getSecurityManager().getUser()
-            # if isinstance(user, LDAPUser):
-            #     user_dn = user.getUserDN()
-            #     user_pwd = user._getPassword()
-            #     if not user_pwd or user_pwd == 'undef':
-            #         # This user object did not result from a login
-            #         user_dn = user_pwd = ''
-            # else:
-            #     user_dn = user_pwd = ''
+            # import pdb; pdb.set_trace() got rid of LDAPUser, not tested
             try:
                 user_dn = user.getUserDN()
                 user_pwd = user._getPassword()
                 if not user_pwd or user_pwd == 'undef':
-                    # import pdb; pdb.set_trace()
+                    # import pdb; pdb.set_trace() not tested here
                     # This user object did not result from a login
                     user_dn = user_pwd = ''
             except:
@@ -59,19 +51,18 @@ def agent_from_uf_ldapuserfolder(ldap_folder, **config):
         user_dn, user_pwd = config.get('user_dn'), config.get('user_pw', '')
         if not user_dn:
             user = getSecurityManager().getUser()
-            # if isinstance(user, LDAPUser):
-            #     user_dn = user.getUserDN()
-            #     user_pwd = user._getPassword()
-            #     if not user_pwd or user_pwd == 'undef':
-            #         # This user object did not result from a login
-            #         user_dn = user_pwd = ''
-            # else:
-            #     user_dn = user_pwd = ''
+            if isinstance(user, LDAPUser):
+                user_dn = user.getUserDN()
+                user_pwd = user._getPassword()
+                if not user_pwd or user_pwd == 'undef':
+                    # This user object did not result from a login
+                    user_dn = user_pwd = ''
+            else:
+                user_dn = user_pwd = ''
             try:
                 user_dn = user.getUserDN()
                 user_pwd = user._getPassword()
                 if not user_pwd or user_pwd == 'undef':
-                    # import pdb; pdb.set_trace()
                     # This user object did not result from a login
                     user_dn = user_pwd = ''
             except:
@@ -82,7 +73,7 @@ def agent_from_uf_ldapuserfolder(ldap_folder, **config):
 
 def agent_from_site(site, **config):
     """ Get agent instance based on a Naaya site with ldap user source """
-    # import pdb; pdb.set_trace()
+    # import pdb; pdb.set_trace() not tested
     source = site.getAuthenticationTool().getSources()[0]
     ldap_folder = source.getUserFolder()
     return agent_from_uf(ldap_folder)

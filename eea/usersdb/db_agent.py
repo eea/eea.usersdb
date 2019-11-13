@@ -357,10 +357,7 @@ class UsersDB(object):
         """
         if isinstance(user_dn, bytes):
             user_dn = user_dn.decode()
-        try:
-            assert user_dn.endswith(',' + self._user_dn_suffix)
-        except:
-            import pdb; pdb.set_trace()
+        assert user_dn.endswith(',' + self._user_dn_suffix)
 
         if user_dn.startswith('uid='):
             user_id = user_dn[len('uid='): - (len(self._user_dn_suffix) + 1)]
@@ -420,11 +417,8 @@ class UsersDB(object):
                 else:
                     # some have more, e.g. multiple orgs in "o" property, use
                     # join
-                    try:
-                        out[name] = b', '.join(
-                            attr[ldap_name]).decode(self._encoding)
-                    except:
-                        import pdb; pdb.set_trace()
+                    out[name] = b', '.join(
+                        attr[ldap_name]).decode(self._encoding)
 
                     if name == 'uid':
                         out[name] = str(out[name])
@@ -646,10 +640,9 @@ class UsersDB(object):
                         # ignore blank member DNs
 
                         continue
-                    if member_dn.endswith(self._org_dn_suffix.encode('utf-8')):
-                        import pdb; pdb.set_trace()
+                    if member_dn.endswith(self._org_dn_suffix.encode()):
                         out.add(('orgs', self._org_id(member_dn).decode()))
-                    elif member_dn.endswith(self._user_dn_suffix.encode('utf-8')):
+                    elif member_dn.endswith(self._user_dn_suffix.encode()):
                         out.add(('users', self._user_id(member_dn.decode())))
                     # else ignore the record
 
@@ -693,7 +686,6 @@ class UsersDB(object):
         dn, attr = result[0]
         assert dn == query_dn
 
-        # import pdb; pdb.set_trace()
         user_info = self._unpack_user_info(dn, attr)
         # user_info['organisation_links'] = self._search_user_in_orgs(user_id)
 
@@ -960,7 +952,7 @@ class UsersDB(object):
         log.info("Modifying info for user %r", user_id)
 
         for dn, modify_statements in six.iteritems(diff):
-            import pdb; pdb.set_trace()
+            # import pdb; pdb.set_trace() # no longer needed ?
             result = self.conn.modify_s(dn, tuple(modify_statements))
             assert result[:2] == (ldap.RES_MODIFY, [])
 
@@ -1391,7 +1383,6 @@ class UsersDB(object):
                                     attrlist=('uniqueMember',))
         assert len(result) == 1
         dn, attr = result[0]
-        # import pdb; pdb.set_trace()
         return [self._user_id(d) for d in attr['uniqueMember'] if d.decode() != '']
 
     @log_ldap_exceptions
@@ -1961,7 +1952,6 @@ class UsersDB(object):
         permitted_person = list(map(self._user_id, role_info['permittedPerson']))
 
         role_info['permittedSender'] = [sender.decode() for sender in role_info['permittedSender']]
-        # import pdb; pdb.set_trace()
         return {
             'owner': owner, 'permittedSender': role_info['permittedSender'],
             'permittedPerson': permitted_person}
@@ -2280,7 +2270,6 @@ class UsersDB(object):
         try:
             _remove()
         except ldap.OBJECT_CLASS_VIOLATION:
-            import pdb; pdb.set_trace()
             log.info("Adding placeholder uniqueMember for %r", role_dn)
             _add_placeholder()
             _remove()
