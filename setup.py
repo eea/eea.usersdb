@@ -1,8 +1,13 @@
+import os
 from setuptools import setup, find_packages
 
+NAME = "eea.usersdb"
+PATH = NAME.split('.') + ['version.txt']
+VERSION = open(os.path.join(*PATH)).read().strip()
+
 setup(
-    name='eea.usersdb',
-    version='1.3.44',
+    name=NAME,
+    version=VERSION,
     author='Eau de Web',
     author_email='office@eaudeweb.ro',
     packages=find_packages(),
