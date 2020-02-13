@@ -1,7 +1,6 @@
 from eea.usersdb import UsersDB
 from AccessControl.SecurityManagement import getSecurityManager
-# from Products.LDAPUserFolder.LDAPUser import LDAPUser
-from pas.plugins.ldap.sheet import LDAPUserPropertySheet
+from Products.LDAPUserFolder.LDAPUser import LDAPUser
 
 
 def agent_from_uf(ldap_folder, **config):
@@ -20,19 +19,17 @@ def agent_from_uf(ldap_folder, **config):
     if config.get('bind') is True:
         user_dn, user_pwd = config.get('user_dn'), config.get('user_pw', '')
         if not user_dn:
-            user = getSecurityManager().getUser() # get plone user
-            # import pdb; pdb.set_trace() got rid of LDAPUser, not tested
+            user = getSecurityManager().getUser()  # get plone user
             user_sheet = user.getPropertysheet('pasldap')
-            user_object = sheet._get_ldap_principal()
+            user_object = user_sheet._get_ldap_principal()
             try:
                 # user_dn = user.getUserDN()
                 user_dn = user_object.context._dn
-                user_pwd = user._getPassword() # need replacement ?
+                user_pwd = user._getPassword()  # need replacement ?
                 if not user_pwd or user_pwd == 'undef':
-                    # import pdb; pdb.set_trace() not tested here
                     # This user object did not result from a login
                     user_dn = user_pwd = ''
-            except:
+            except Exception:
                 user_dn = user_pwd = ''
         db.perform_bind(user_dn, user_pwd)
     return db
@@ -68,7 +65,7 @@ def agent_from_uf_ldapuserfolder(ldap_folder, **config):
                 if not user_pwd or user_pwd == 'undef':
                     # This user object did not result from a login
                     user_dn = user_pwd = ''
-            except:
+            except Exception:
                 user_dn = user_pwd = ''
         db.perform_bind(user_dn, user_pwd)
     return db
