@@ -194,9 +194,9 @@ Changelog
 1.3.8 (2013-12-04)
 ------------------------
 * Bug fix: permitted senders are not users, don't try to save changelog for them
-[tiberich #17608]
+  [tiberich #17608]
 * PEP8 the db_agent.py module
-[tiberich]
+  [tiberich]
 
 1.3.7 (2013-12-03)
 ------------------------
