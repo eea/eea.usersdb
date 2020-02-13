@@ -1,4 +1,7 @@
-1.3.44 (unreleased)
+Changelog
+=========
+
+2.0 (2020-02-13)
 ------------------------
 * telephone is no longer mandatory [dumitval]
 * fix for newer chameleon version [dumitval]
@@ -191,9 +194,9 @@
 1.3.8 (2013-12-04)
 ------------------------
 * Bug fix: permitted senders are not users, don't try to save changelog for them
-[tiberich #17608]
+  [tiberich #17608]
 * PEP8 the db_agent.py module
-[tiberich]
+  [tiberich]
 
 1.3.7 (2013-12-03)
 ------------------------
