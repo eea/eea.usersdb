@@ -1,4 +1,7 @@
-1.3.44 (unreleased)
+Changelog
+=========
+
+2.0 (2020-02-13)
 ------------------------
 * telephone is no longer mandatory [dumitval]
 * fix for newer chameleon version [dumitval]
