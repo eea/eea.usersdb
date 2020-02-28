@@ -1,5 +1,8 @@
 Changelog
 =========
+
+2.2-dev0 - (unreleased)
+---------------------------
 2.1 - (2020-02-26)
 ---------------------------
 * Feature: updated Jenkins pipeline
