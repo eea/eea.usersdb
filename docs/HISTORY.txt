@@ -5,6 +5,7 @@ Changelog
 ---------------------------
 * Change: Add jenkins badges Refs #110159
   [valentinab25]
+  
 2.1 - (2020-02-26)
 ---------------------------
 * Feature: updated Jenkins pipeline
