@@ -19,5 +19,14 @@ setup(
     packages=find_packages(),
     include_package_data=True,
     zip_safe=False,
-    install_requires=['python-ldap', 'colander', 'phonenumbers', 'six'],
+    install_requires=[
+        'python-ldap',
+        'colander',
+        'phonenumbers',
+        'six'],
+    extras_require={
+        'test': [
+            'plone.app.testing',
+        ],
+    },
 )
