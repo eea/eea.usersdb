@@ -411,7 +411,8 @@ class UsersDB(object):
                 if ldap_name.endswith('Timestamp'):
                     try:
                         out[name] = datetime.strptime(
-                            attr[ldap_name][0].decode()[:14] + "Z", '%Y%m%d%H%M%SZ')
+                            attr[ldap_name][0].decode()[:14] + "Z",
+                            '%Y%m%d%H%M%SZ')
                     except ValueError:
                         out[name] = attr[ldap_name][0].decode()
                 else:
@@ -460,7 +461,7 @@ class UsersDB(object):
         for dn, attr in result:
             values = attr.get('description', [''])
             if values[0] == '':
-                out[self._role_id(dn)] = '' # No description
+                out[self._role_id(dn)] = ''  # No description
             else:
                 out[self._role_id(dn)] = values[0].decode(self._encoding)
         return out
@@ -558,10 +559,12 @@ class UsersDB(object):
             members = list(filter(bool, attr.get('uniqueMember', [])))
             out['users'].extend(
                 list(map(self._user_id,
-                    [x.decode() for x in members if x.endswith(self._user_dn_suffix.encode())])))
+                         [x.decode() for x in members if
+                             x.endswith(self._user_dn_suffix.encode())])))
             out['orgs'].extend(
                 list(map(self._org_id,
-                    [x.decode() for x in members if x.endswith(self._org_dn_suffix.encode())])))
+                         [x.decode() for x in members if
+                             x.endswith(self._org_dn_suffix.encode())])))
 
         return out
 
@@ -597,12 +600,12 @@ class UsersDB(object):
             roles[crt_id] = \
                 {
                     'users': list(map(self._user_id,
-                                 [x.decode() for x in mbs if x.endswith(
-                                         self._user_dn_suffix.encode())])),
+                                      [x.decode() for x in mbs if x.endswith(
+                                          self._user_dn_suffix.encode())])),
                     'orgs': list(map(
                         self._org_id,
                         [x.decode() for x in mbs if x.endswith(
-                                self._org_dn_suffix.encode())]))
+                            self._org_dn_suffix.encode())]))
             }
             parent = self._role_id_parent(dn)
 
@@ -1026,8 +1029,9 @@ class UsersDB(object):
         roles = self.list_member_roles("user", user_id)
 
         for role in roles:
-            try:    # it does when it deletes parent role first,
-                    # for a leaf role in the role tree
+            try:
+                # it does when it deletes parent role first,
+                # for a leaf role in the role tree
                 self.remove_from_role(role, "user", user_id)
             except ValueError:
                 # log.warning("Could not remove role %s for user %s",
@@ -1080,8 +1084,9 @@ class UsersDB(object):
         roles = self.list_member_roles("user", user_id)
 
         for role in roles:
-            try:    # it does when it deletes parent role first,
-                    # for a leaf role in the role tree
+            try:
+                # it does when it deletes parent role first,
+                # for a leaf role in the role tree
                 self.remove_from_role(role, "user", user_id)
             except ValueError:
                 # log.warning("Could not remove role %s for user %s",
@@ -1308,8 +1313,9 @@ class UsersDB(object):
         roles = self.list_member_roles("user", user_id)
 
         for role in roles:
-            try:    # it does when it deletes parent role first,
-                    # for a leaf role in the role tree
+            try:
+                # it does when it deletes parent role first,
+                # for a leaf role in the role tree
                 self.remove_from_role(role, "user", user_id)
             except ValueError:
                 continue
@@ -1383,7 +1389,8 @@ class UsersDB(object):
                                     attrlist=('uniqueMember',))
         assert len(result) == 1
         dn, attr = result[0]
-        return [self._user_id(d) for d in attr['uniqueMember'] if d.decode() != '']
+        return [self._user_id(d) for d in attr['uniqueMember'] if
+                d.decode() != '']
 
     @log_ldap_exceptions
     def pending_members_in_org(self, org_id):
@@ -1451,7 +1458,7 @@ class UsersDB(object):
             result = self.conn.search_s(query_dn, ldap.SCOPE_BASE)
         except ldap.NO_SUCH_OBJECT:
             return False
-        except:
+        except Exception:
             log.exception("Could not search for %s with org_dn", org_id,
                           query_dn)
 
@@ -1541,7 +1548,7 @@ class UsersDB(object):
                     (ldap.MOD_ADD, 'uniqueMember', [new_org_dn]),
                 ))
                 assert mod_result[:2] == (ldap.RES_MODIFY, [])
-        except:
+        except Exception:
             msg = ("Error while updating references to organisation "
                    "from %r to %r" % (org_dn, new_org_dn))
             log.exception(msg)
@@ -1705,7 +1712,7 @@ class UsersDB(object):
                     (ldap.MOD_ADD, 'uniqueMember', [new_role_dn]),
                 ))
                 assert mod_result[:2] == (ldap.RES_MODIFY, [])
-        except:
+        except Exception:
             msg = ("Error while updating references to role "
                    "from %r to %r" % (role_dn, new_role_dn))
             log.exception(msg)
@@ -1742,11 +1749,13 @@ class UsersDB(object):
         role_dn = self._role_dn(role_id)
         try:
             self.conn.modify_s(role_dn, (
-                (ldap.MOD_REPLACE, 'businessCategory', [str(is_extended).encode()]),
+                (ldap.MOD_REPLACE, 'businessCategory',
+                 [str(is_extended).encode()]),
             ))
         except ldap.NO_SUCH_ATTRIBUTE:
             self.conn.modify_s(role_dn, (
-                (ldap.MOD_ADD, 'businessCategory', [str(is_extended).encode()]),
+                (ldap.MOD_ADD, 'businessCategory',
+                 [str(is_extended).encode()]),
             ))
 
     def _sub_roles(self, role_id):
@@ -1844,7 +1853,8 @@ class UsersDB(object):
         pattern = '(&(objectClass=person)%s(|%s))' % \
             (disabled_filter, ''.join(lookup_filters), )
 
-        query_filter = ldap.filter.filter_format(pattern, tuple(query_arguments))
+        query_filter = ldap.filter.filter_format(pattern,
+                                                 tuple(query_arguments))
         result = self.conn.search_s(self._user_dn_suffix, ldap.SCOPE_ONELEVEL,
                                     filterstr=query_filter)
 
@@ -1948,10 +1958,13 @@ class UsersDB(object):
         role_info['owner'] = [ow.decode() for ow in role_info['owner']]
         owner = list(map(self._user_id, role_info['owner']))
 
-        role_info['permittedPerson'] = [per.decode() for per in role_info['permittedPerson']]
-        permitted_person = list(map(self._user_id, role_info['permittedPerson']))
+        role_info['permittedPerson'] = [
+            per.decode() for per in role_info['permittedPerson']]
+        permitted_person = list(
+            map(self._user_id, role_info['permittedPerson']))
 
-        role_info['permittedSender'] = [sender.decode() for sender in role_info['permittedSender']]
+        role_info['permittedSender'] = [
+            sender.decode() for sender in role_info['permittedSender']]
         return {
             'owner': owner, 'permittedSender': role_info['permittedSender'],
             'permittedPerson': permitted_person}
@@ -2159,7 +2172,8 @@ class UsersDB(object):
         existing = role_info['alternateLeader']
         to_add = list(set(user_dns) - set(existing))
         to_remove = list(set(existing) - set(user_dns))
-        members = list(map(self._user_dn, self.members_in_role(role_id)['users']))
+        members = list(
+            map(self._user_dn, self.members_in_role(role_id)['users']))
 
         if set(to_add) - set(members):
             raise ValueError(
@@ -2173,7 +2187,7 @@ class UsersDB(object):
                     self.conn.modify_s(role_dn, (
                         (ldap.MOD_DELETE, 'alternateLeader', [user_dn]),
                     ))
-                except:
+                except Exception:
                     log.info("Cannot unset %r as leader for %r",
                              user_dn, role_dn)
                 else:
@@ -2309,7 +2323,8 @@ class UsersDB(object):
         # remove from role_dn and sub-roles
 
         for sub_role_dn in roles:
-            self._remove_member_dn_from_single_role_dn(sub_role_dn, member_dn.encode())
+            self._remove_member_dn_from_single_role_dn(sub_role_dn,
+                                                       member_dn.encode())
 
         # remove from "orphan" ancestors (actually ancestors without kids)
         ancestors = list(self._ancestor_roles_dn(role_dn))[1:]
@@ -2319,7 +2334,8 @@ class UsersDB(object):
             sublevel = self._imediate_sub_roles_with_member(rdn, member_dn)
 
             if not list(sublevel):
-                self._remove_member_dn_from_single_role_dn(rdn, member_dn.encode())
+                self._remove_member_dn_from_single_role_dn(rdn,
+                                                           member_dn.encode())
                 anc_roles.append(rdn)
         anc_roles.sort(reverse=True)
 
