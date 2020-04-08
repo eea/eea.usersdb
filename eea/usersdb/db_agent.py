@@ -882,7 +882,9 @@ class UsersDB(object):
 
     def _user_info_diff(self, user_id, old_info, new_info, existing_orgs):
         def pack(value):
-            return [value.encode(self._encoding)]
+            if not isinstance(value, bytes):
+                value = value.encode(self._encoding)
+            return [value]
 
         # normalize user_info dictionaries
         old_info = dict(old_info)
@@ -961,7 +963,9 @@ class UsersDB(object):
 
     def _org_info_diff(self, org_id, old_info, new_info):
         def pack(value):
-            return [value.encode(self._encoding)]
+            if not isinstance(value, bytes):
+                value = value.encode(self._encoding)
+            return [value]
 
         for name in self.org_schema:
             old_value = old_info.get(name, "")
@@ -1103,7 +1107,6 @@ class UsersDB(object):
             self.remove_role_owner(self._role_id(role), user_id)
 
         log.info("Disabling user %r", user_id)
-
         user_info = self.user_info(user_id)
         user_dn = self._user_dn(user_id)
         self.add_change_record(user_dn, DISABLE_ACCOUNT, {

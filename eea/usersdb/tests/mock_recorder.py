@@ -1,4 +1,37 @@
-from mock import callargs
+class callargs(tuple):
+    """
+    A tuple for holding the results of a call to a mock, either in the form
+    `(args, kwargs)` or `(name, args, kwargs)`.
+    If args or kwargs are empty then a callargs tuple will compare equal to
+    a tuple without those values. This makes comparisons less verbose::
+        callargs('name', (), {}) == ('name',)
+        callargs('name', (1,), {}) == ('name', (1,))
+        callargs((), {'a': 'b'}) == ({'a': 'b'},)
+    """
+    def __eq__(self, other):
+        if len(self) == 3:
+            if other[0] != self[0]:
+                return False
+            args_kwargs = self[1:]
+            other_args_kwargs = other[1:]
+        else:
+            args_kwargs = tuple(self)
+            other_args_kwargs = other
+
+        if len(other_args_kwargs) == 0:
+            other_args, other_kwargs = (), {}
+        elif len(other_args_kwargs) == 1:
+            if isinstance(other_args_kwargs[0], tuple):
+                other_args = other_args_kwargs[0]
+                other_kwargs = {}
+            else:
+                other_args = ()
+                other_kwargs = other_args_kwargs[0]
+        else:
+            other_args, other_kwargs = other_args_kwargs
+
+        return tuple(args_kwargs) == (other_args, other_kwargs)
+
 
 class Recorder(object):
     def __init__(self):
