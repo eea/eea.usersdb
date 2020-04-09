@@ -668,17 +668,18 @@ class TestRemoveFromRole(unittest.TestCase):
 
 
 org_info_fixture = {
-    'name': u"Ye olde bridge club",
-    'phone': u"+45 555 2222",
-    'fax': u"+45 555 9999",
-    'url': u"http://bridge.example.com/",
-    'postal_address': (u"13 Card games road\n"
-                       u"K\xf8benhavn, Danmark\n"),
-    'street': u"Card games road",
-    'po_box': u"123456",
-    'postal_code': u"DK 456789",
-    'country': u"Denmark",
-    'locality': u"K\xf8benhavn",
+    'name': "Ye olde bridge club",
+    'name_native': 'Ye ølde bridge club',
+    'phone': "+45 555 2222",
+    'fax': "+45 555 9999",
+    'email': "bridge@example.com",
+    'url': "http://bridge.example.com/",
+    'postal_address': ("13 Card games road\nKøbenhavn, Danmark\n"),
+    'street': "Card games road",
+    'po_box': "123456",
+    'postal_code': "DK 456789",
+    'country': "Denmark",
+    'locality': "København",
 }
 
 
@@ -691,16 +692,18 @@ class OrganisationsTest(unittest.TestCase):
         bridge_club_dn = 'cn=bridge_club,ou=Organisations,o=EIONET,l=Europe'
         self.mock_conn.search_s.return_value = [(bridge_club_dn, {
             'o': [b'Ye olde bridge club'],
-            'telephoneNumber': ['+45 555 2222'],
-            'facsimileTelephoneNumber': ['+45 555 9999'],
-            'street': ['Card games road'],
-            'postOfficeBox': ['123456'],
-            'postalCode': ['DK 456789'],
-            'postalAddress': ['13 Card games road\n'
-                              'K\xc3\xb8benhavn, Danmark\n'],
-            'st': ['Denmark'],
-            'l': ['K\xc3\xb8benhavn'],
-            'labeledURI': ['http://bridge.example.com/'],
+            'physicalDeliveryOfficeName': [b'Ye \xc3\xb8lde bridge club'],
+            'telephoneNumber': [b'+45 555 2222'],
+            'facsimileTelephoneNumber': [b'+45 555 9999'],
+            'street': [b'Card games road'],
+            'postOfficeBox': [b'123456'],
+            'postalCode': [b'DK 456789'],
+            'postalAddress': [b'13 Card games road\n'
+                              b'K\xc3\xb8benhavn, Danmark\n'],
+            'c': [b'Denmark'],
+            'l': [b'K\xc3\xb8benhavn'],
+            'labeledURI': [b'http://bridge.example.com/'],
+            'mail': [b'bridge@example.com'],
         })]
 
         org_info = self.db.org_info('bridge_club')
@@ -715,21 +718,24 @@ class OrganisationsTest(unittest.TestCase):
 
     def test_create_organisation(self):
         self.db._bound = True
+        poker_club_dn = self.db._org_dn('poker_club')
         self.mock_conn.add_s.return_value = (ldap.RES_ADD, [])
+        self.mock_conn.search_s.return_value = [(poker_club_dn, {})]
+        self.mock_conn.modify_s.return_value = (ldap.RES_MODIFY, [])
 
         self.db.create_org('poker_club', {
             'name': u"P\xf8ker club",
             'url': u"http://poker.example.com/",
         })
 
-        poker_club_dn = 'cn=poker_club,ou=Organisations,o=EIONET,l=Europe'
         self.mock_conn.add_s.assert_called_once_with(poker_club_dn, [
-            ('cn', ['poker_club']),
-            ('objectClass', ['top', 'groupOfUniqueNames',
-                             'organizationGroup', 'labeledURIObject']),
-            ('uniqueMember', ['']),
-            ('o', ['P\xc3\xb8ker club']),
-            ('labeledURI', ['http://poker.example.com/']),
+            ('cn', [b'poker_club']),
+            ('objectClass', [b'top', b'groupOfUniqueNames',
+                             b'organizationGroup', b'labeledURIObject',
+                             b'hierarchicalGroup']),
+            ('uniqueMember', [b'']),
+            ('o', [b'P\xc3\xb8ker club']),
+            ('labeledURI', [b'http://poker.example.com/']),
         ])
 
     def test_delete_organisation(self):
@@ -788,16 +794,21 @@ class OrganisationsTest(unittest.TestCase):
             ('cn=bridge_club,ou=Organisations,o=EIONET,l=Europe', {
                 'o': [b"Bridge club"]}),
             ('cn=poker_club,ou=Organisations,o=EIONET,l=Europe', {
-                'o': ["P\xc3\xb6ker club"]})
+                'o': [b"P\xc3\xb6ker club"]})
         ]
 
         orgs = self.db.all_organisations()
 
-        self.assertEqual(orgs, {'bridge_club': u"Bridge club",
-                                'poker_club': u"P\xf6ker club"})
+        self.assertEqual(
+            orgs,
+            {'bridge_club': {'name': "Bridge club", 'name_native': '',
+                             'country': 'int'},
+             'poker_club': {'name': "P\xf6ker club", 'name_native': '',
+                            'country': 'int'}})
         self.mock_conn.search_s.assert_called_once_with(
             'ou=Organisations,o=EIONET,l=Europe', ldap.SCOPE_ONELEVEL,
-            filterstr='(objectClass=organizationGroup)', attrlist=('o',))
+            filterstr='(objectClass=organizationGroup)',
+            attrlist=('o', 'c', 'physicalDeliveryOfficeName'))
 
     def test_members_in_organisation(self):
         self.mock_conn.search_s.return_value = [
@@ -846,33 +857,52 @@ class OrganisationsTest(unittest.TestCase):
             ))
 
     def test_add_to_org(self):
+        def search_s_side(uid, *args, **kwargs):
+            if uid == self.db._user_dn('anne'):
+                return [(uid, {})]
+            else:
+                return [(self.db._org_dn('bridge_club'), {})]
+        self.mock_conn.search_s.side_effect = search_s_side
         self.mock_conn.modify_s.return_value = (ldap.RES_MODIFY, [])
         self.db._bound = True
         self.db.members_in_org = Mock(return_value=['anne'])
 
+        modify_statements = tuple(
+            [(ldap.MOD_ADD, 'uniqueMember',
+              [b'uid=anne,ou=Users,o=EIONET,l=Europe', ]), ])
+        recorder = self.mock_conn.modify_s.side_effect = Recorder()
+        recorder.expect(ignore_args=True,
+                        return_value=(ldap.RES_MODIFY, []))
+        recorder.expect(ignore_args=True,
+                        return_value=(ldap.RES_MODIFY, []))
+        recorder.expect(self.db._org_dn('bridge_club'), modify_statements,
+                        return_value=(ldap.RES_MODIFY, []))
+
         self.db.add_to_org('bridge_club', ['anne'])
 
-        self.mock_conn.modify_s.assert_called_once_with(
-            'cn=bridge_club,ou=Organisations,o=EIONET,l=Europe', (
-                (ldap.MOD_ADD, 'uniqueMember', [
-                    'uid=anne,ou=Users,o=EIONET,l=Europe',
-                ]),
-            ))
-
     def test_add_to_empty_org(self):
+        def search_s_side(uid, *args, **kwargs):
+            if uid == self.db._user_dn('anne'):
+                return [(uid, {})]
+            else:
+                return [(self.db._org_dn('bridge_club'), {})]
         self.mock_conn.modify_s.return_value = (ldap.RES_MODIFY, [])
         self.db._bound = True
         self.db.members_in_org = Mock(return_value=[])
+        self.mock_conn.search_s.side_effect = search_s_side
 
+        modify_statements = tuple(
+            [(ldap.MOD_ADD, 'uniqueMember',
+              [b'uid=anne,ou=Users,o=EIONET,l=Europe', ]),
+             (ldap.MOD_DELETE, 'uniqueMember', [b''])])
+        recorder = self.mock_conn.modify_s.side_effect = Recorder()
+        recorder.expect(ignore_args=True,
+                        return_value=(ldap.RES_MODIFY, []))
+        recorder.expect(ignore_args=True,
+                        return_value=(ldap.RES_MODIFY, []))
+        recorder.expect(self.db._org_dn('bridge_club'), modify_statements,
+                        return_value=(ldap.RES_MODIFY, []))
         self.db.add_to_org('bridge_club', ['anne'])
-
-        self.mock_conn.modify_s.assert_called_once_with(
-            'cn=bridge_club,ou=Organisations,o=EIONET,l=Europe', (
-                (ldap.MOD_ADD, 'uniqueMember', [
-                    'uid=anne,ou=Users,o=EIONET,l=Europe',
-                ]),
-                (ldap.MOD_DELETE, 'uniqueMember', ['']),
-            ))
 
 
 class OrganisationEditTest(unittest.TestCase):
@@ -883,9 +913,12 @@ class OrganisationEditTest(unittest.TestCase):
         self.mock_conn.search_s.return_value = [
             ('cn=bridge_club,ou=Organisations,o=EIONET,l=Europe', {
                 'o': [b'Ye olde bridge club'],
-                'labeledURI': ['http://bridge.example.com/'],
+                'labeledURI': [b'http://bridge.example.com/'],
             })]
         self.mock_conn.modify_s.return_value = (ldap.RES_MODIFY, [])
+
+    def tearDown(self):
+        self.mock_conn.modify_s.reset_mock()
 
     def test_change_nothing(self):
         self.db.set_org_info('bridge_club', {
@@ -896,49 +929,59 @@ class OrganisationEditTest(unittest.TestCase):
         assert self.mock_conn.modify_s.call_count == 0
 
     def test_add_one(self):
+        bridge_club_dn = 'cn=bridge_club,ou=Organisations,o=EIONET,l=Europe'
+        modify_statements = tuple(
+            [(ldap.MOD_ADD, 'telephoneNumber', [b'555 2222'])])
+        recorder = self.mock_conn.modify_s.side_effect = Recorder()
+        recorder.expect(bridge_club_dn, modify_statements,
+                        return_value=(ldap.RES_MODIFY, []))
+        recorder.expect(ignore_args=True,
+                        return_value=(ldap.RES_MODIFY, []))
         self.db.set_org_info('bridge_club', {
-            'name': u"Ye olde bridge club",
-            'url': u"http://bridge.example.com/",
-            'phone': u"555 2222",
+            'name': "Ye olde bridge club",
+            'url': "http://bridge.example.com/",
+            'phone': "555 2222",
         })
 
-        bridge_club_dn = 'cn=bridge_club,ou=Organisations,o=EIONET,l=Europe'
-        modify_statements = [(ldap.MOD_ADD, 'telephoneNumber', ['555 2222'])]
-        self.mock_conn.modify_s.assert_called_once_with(
-            bridge_club_dn, tuple(modify_statements))
-
     def test_change_one(self):
+        bridge_club_dn = 'cn=bridge_club,ou=Organisations,o=EIONET,l=Europe'
+        modify_statements = tuple(
+            [(ldap.MOD_REPLACE, 'o', [b'Ye new bridge club'])])
+        recorder = self.mock_conn.modify_s.side_effect = Recorder()
+        recorder.expect(bridge_club_dn, modify_statements,
+                        return_value=(ldap.RES_MODIFY, []))
+        recorder.expect(ignore_args=True,
+                        return_value=(ldap.RES_MODIFY, []))
         self.db.set_org_info('bridge_club', {
             'name': u"Ye new bridge club",
             'url': u"http://bridge.example.com/",
         })
 
-        bridge_club_dn = 'cn=bridge_club,ou=Organisations,o=EIONET,l=Europe'
-        modify_statements = [(ldap.MOD_REPLACE, 'o', [b'Ye new bridge club'])]
-        self.mock_conn.modify_s.assert_called_once_with(
-            bridge_club_dn, tuple(modify_statements))
-
     def test_remove_one(self):
+        bridge_club_dn = 'cn=bridge_club,ou=Organisations,o=EIONET,l=Europe'
+        modify_statements = tuple([(ldap.MOD_DELETE, 'o', [])])
+        recorder = self.mock_conn.modify_s.side_effect = Recorder()
+        recorder.expect(bridge_club_dn, modify_statements,
+                        return_value=(ldap.RES_MODIFY, []))
+        recorder.expect(ignore_args=True,
+                        return_value=(ldap.RES_MODIFY, []))
         self.db.set_org_info('bridge_club', {
             'url': u"http://bridge.example.com/",
         })
-
-        bridge_club_dn = 'cn=bridge_club,ou=Organisations,o=EIONET,l=Europe'
-        modify_statements = [(ldap.MOD_DELETE, 'o', [])]
-        self.mock_conn.modify_s.assert_called_once_with(
-            bridge_club_dn, tuple(modify_statements))
 
     def test_unicode(self):
-        self.db.set_org_info('bridge_club', {
-            'name': u"\u0143\xe9w n\xe6\u1e41",
-            'url': u"http://bridge.example.com/",
-        })
-
         bridge_club_dn = 'cn=bridge_club,ou=Organisations,o=EIONET,l=Europe'
-        modify_statements = [(ldap.MOD_REPLACE, 'o', [
-            '\xc5\x83\xc3\xa9w n\xc3\xa6\xe1\xb9\x81'])]
-        self.mock_conn.modify_s.assert_called_once_with(
-            bridge_club_dn, tuple(modify_statements))
+        modify_statements = tuple([(ldap.MOD_REPLACE, 'o', [
+            b'\xc5\x83\xc3\xa9w n\xc3\xa6\xe1\xb9\x81'])])
+        recorder = self.mock_conn.modify_s.side_effect = Recorder()
+        recorder.expect(bridge_club_dn, modify_statements,
+                        return_value=(ldap.RES_MODIFY, []))
+        recorder.expect(ignore_args=True,
+                        return_value=(ldap.RES_MODIFY, []))
+        self.db.set_org_info('bridge_club', {
+            'name': "\u0143\xe9w n\xe6\u1e41",
+            'url': "http://bridge.example.com/",
+        })
 
 
 class LdapAgentUserEditingTest(unittest.TestCase):
