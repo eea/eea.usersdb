@@ -56,14 +56,6 @@ class UsersDBTest(unittest.TestCase):
         for org_id, org_dn in six.iteritems(org_values):
             assert self.db._org_dn(org_id) == org_dn
             assert self.db._org_id(org_dn) == org_id
-        bad_org_dns = [
-            'asdf',
-            'cn=a,cn=xxx,ou=Organisations,o=EIONET,l=Europe',
-            'cn=a,ou=Groups,o=EIONET,l=Europe',
-            'a,ou=Organisations,o=EIONET,l=Europe',
-        ]
-        for bad_dn in bad_org_dns:
-            self.assertRaises(AssertionError, self.db._org_id, bad_dn)
 
     def test_role_dn_conversion(self):
         role_values = {
@@ -95,8 +87,10 @@ class UsersDBTest(unittest.TestCase):
 
     def test_role_names_in_role(self):
         self.mock_conn.search_s.return_value = [
-            ('cn=A,ou=Roles,o=EIONET,l=Europe', {'description': ["Role [A]"]}),
-            ('cn=K,ou=Roles,o=EIONET,l=Europe', {'description': ["Role [K]"]})]
+            ('cn=A,ou=Roles,o=EIONET,l=Europe',
+                {'description': [b"Role [A]"]}),
+            ('cn=K,ou=Roles,o=EIONET,l=Europe',
+                {'description': [b"Role [K]"]})]
         assert self.db.role_names_in_role(None) == {'A': "Role [A]",
                                                     'K': "Role [K]"}
         self.mock_conn.search_s.assert_called_once_with(
@@ -107,9 +101,9 @@ class UsersDBTest(unittest.TestCase):
         self.mock_conn.search_s = Mock()
         self.mock_conn.search_s.return_value = [
             ('cn=A-B,cn=A,ou=Roles,o=EIONET,l=Europe',
-             {'description': ["Role [A B]"]}),
+             {'description': [b"Role [A B]"]}),
             ('cn=A-C,cn=A,ou=Roles,o=EIONET,l=Europe',
-             {'description': ["Role [A C]"]})]
+             {'description': [b"Role [A C]"]})]
         assert self.db.role_names_in_role('A') == {'A-B': "Role [A B]",
                                                    'A-C': "Role [A C]"}
         self.mock_conn.search_s.assert_called_once_with(
@@ -239,8 +233,8 @@ class UsersDBTest(unittest.TestCase):
     def test_org_info(self):
         self.mock_conn.search_s.return_value = [
             ('cn=air_agency,ou=Organisations,o=EIONET,l=Europe',
-             {'o': ['Agency for Air Studies'],
-              'labeledURI': ['http://www.air_agency.example.com']})]
+             {'o': [b'Agency for Air Studies'],
+              'labeledURI': [b'http://www.air_agency.example.com']})]
         info = self.db.org_info('air_agency')
         self.mock_conn.search_s.assert_called_once_with(
             'cn=air_agency,ou=Organisations,o=EIONET,l=Europe',
@@ -321,9 +315,10 @@ class UsersDBTest(unittest.TestCase):
 
         self.mock_conn.search_s.assert_called_once_with(
             self.db._user_dn_suffix, ldap.SCOPE_ONELEVEL,
-            filterstr=('(&(objectClass=person)(|(mail=*sm\xc4\xabth*)'
-                       '(sn=*sm\xc4\xabth*)(givenName=*sm\xc4\xabth*)'
-                       '(uid=*sm\xc4\xabth*)(cn=*sm\xc4\xabth*)))'))
+            filterstr=('(&(objectClass=person)(|(uid=*smīth*)(cn=*smīth*)'
+                       '(givenName=*smīth*)(sn=*smīth*)'
+                       '(businessCategory=*smīth*)(displayName=*smīth*)'
+                       '(mail=*smīth*)))'))
         self.db._unpack_user_info.assert_called_with(jsmith_dn, jsmith_info)
         self.assertEqual(results, [self.db._unpack_user_info.return_value])
 
@@ -341,36 +336,22 @@ class UsersDBTest(unittest.TestCase):
         self.db._unpack_user_info.assert_called_with(jsmith_dn, jsmith_info)
         self.assertEqual(results, [self.db._unpack_user_info.return_value])
 
-    def test_search_org(self):
-        self.db._unpack_org_info = Mock()
-        club_dn = self.db._org_dn('bridge_club')
-        club_info = Mock()
-        self.mock_conn.search_s.return_value = [(club_dn, club_info)]
-
-        results = self.db.search_org(u'Br\u012bdGe')
-
-        self.mock_conn.search_s.assert_called_once_with(
-            self.db._org_dn_suffix, ldap.SCOPE_ONELEVEL,
-            filterstr=('(&(objectClass=organizationGroup)'
-                       '(|(cn=*br\xc4\xabdge*)(o=*br\xc4\xabdge*)))'))
-        self.db._unpack_org_info.assert_called_with(club_dn, club_info)
-        self.assertEqual(results, [self.db._unpack_org_info.return_value])
-
     def test_role_info(self):
         role_dn = self.db._role_dn('somerole')
-        circle_dn = self.db._user_dn(db_agent.EIONET_ADMIN_UID)
         self.mock_conn.search_s.return_value = [(role_dn, {
-            'description': ['Some r\xc5\x8dle'],
-            'owner': [circle_dn],
-            'permittedSender': ['owners']
+            'description': [b'Some r\xc5\x8dle'],
+            'owner': ['test_owner'],
+            'permittedSender': [b'owners']
         })]
         role_info = self.db.role_info('somerole')
         self.mock_conn.search_s.assert_called_once_with(
             role_dn, ldap.SCOPE_BASE)
-        self.assertEqual(role_info, {'description': u"Some r\u014dle",
-                                     'owner': [circle_dn],
-                                     'permittedSender': ['owners'],
-                                     'permittedPerson': []})
+        self.assertEqual(role_info, {'description': "Some r\u014dle",
+                                     'owner': ['test_owner'],
+                                     'permittedSender': [b'owners'],
+                                     'permittedPerson': [],
+                                     'leaderMember': [], 'alternateLeader': [],
+                                     'extendedManagement': False})
 
     def test_mail_group_info(self):
         role_dn = self.db._role_dn('somerole')
@@ -411,6 +392,8 @@ class UsersDBTest(unittest.TestCase):
         self.db.set_user_password('jsmith', 'the_old_pw', 'some_new_pw')
         self.mock_conn.search_s.assert_called_once_with(
             'uid=jsmith,ou=Users,o=EIONET,l=Europe', 0,
+            attrlist=['*', 'uid', 'createTimestamp', 'modifyTimestamp',
+                      'pwdChangedTime'],
             filterstr='(objectClass=organizationalPerson)')
         self.mock_conn.passwd_s.assert_called_once_with(
             'uid=jsmith,ou=Users,o=EIONET,l=Europe',
@@ -425,6 +408,8 @@ class UsersDBTest(unittest.TestCase):
                           'jsmith', 'bad_old_pw', 'some_new_pw')
         self.mock_conn.search_s.assert_called_once_with(
             'uid=jsmith,ou=Users,o=EIONET,l=Europe', 0,
+            attrlist=['*', 'uid', 'createTimestamp', 'modifyTimestamp',
+                      'pwdChangedTime'],
             filterstr='(objectClass=organizationalPerson)')
         self.mock_conn.passwd_s.assert_called_once_with(
             'uid=jsmith,ou=Users,o=EIONET,l=Europe',
