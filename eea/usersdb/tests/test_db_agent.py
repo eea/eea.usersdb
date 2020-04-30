@@ -1,6 +1,6 @@
 ''' test the db agent '''
 # pylint: disable=too-many-lines,too-many-public-methods
-# pylint: disable=anomalous-unicode-escape-in-string
+# pylint: disable=anomalous-unicode-escape-in-string,invalid-encoded-data
 # encoding: utf-8
 import unittest
 from copy import deepcopy
