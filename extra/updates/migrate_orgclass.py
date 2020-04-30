@@ -1,4 +1,4 @@
-#!/usr/bin/python2.7
+''' update org class'''
 
 import subprocess
 from six.moves import input
@@ -20,7 +20,9 @@ write_access_user_dn = "cn=Eionet Administrator,o=EIONET,l=Europe"
 server = 'ldap.eionet.europa.eu'
 
 
+# pylint: disable=redefined-outer-name
 def main(server, write_password, password):
+    ''' main method '''
     base_dn = "ou=Organisations,o=EIONET,l=Europe"
 
     search_cmd = search_orgs_cmd.format(

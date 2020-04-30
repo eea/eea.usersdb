@@ -1,11 +1,13 @@
+''' add search helper to users '''
+# pylint: disable=redefined-outer-name,too-many-locals
 from __future__ import print_function
 import subprocess
+from six.moves import input
 import ldap
 from ldap.ldapobject import LDAPObject
 from ldap.resiter import ResultProcessor
 from transliterate import translit, get_available_language_codes
 from unidecode import unidecode
-from six.moves import input
 
 LDAP_TIMEOUT = 10
 
@@ -23,6 +25,7 @@ class StreamingLDAPObject(LDAPObject, ResultProcessor):
 
 
 def transliterate(first_name, last_name, full_name_native, search_helper):
+    ''' transliterate unicode characters to ascii '''
     vocab = set(first_name.split(' ') + last_name.split(' ') +
                 full_name_native.split(' ') + search_helper.split(' '))
     langs = get_available_language_codes()
@@ -34,7 +37,7 @@ def transliterate(first_name, last_name, full_name_native, search_helper):
         0xd6: ord('O'),
         0xfc: ord('u'),
         0xdc: ord('U'),
-        }
+    }
 
     for name in vocab:
         name = name.decode('utf-8')
@@ -57,8 +60,9 @@ def transliterate(first_name, last_name, full_name_native, search_helper):
 
 
 def connect(server):
+    ''' create connection to server '''
     info = server.split(':')
-    if (len(info) == 2):
+    if len(info) == 2:
         if info[1] == '389':
             server = info[0]
     ldap.set_option(ldap.OPT_X_TLS_REQUIRE_CERT, ldap.OPT_X_TLS_NEVER)
@@ -78,6 +82,7 @@ def connect(server):
 
 
 def main(server, write_password, password):
+    ''' main method '''
     conn = connect(server)
     conn.simple_bind(write_access_user_dn, write_password)
     base_dn = "ou=Users,o=EIONET,l=Europe"
@@ -108,7 +113,7 @@ def main(server, write_password, password):
         try:
             conn.modify_s(user_dn, [
                 (ldap.MOD_REPLACE, 'businessCategory', search_helper)
-                ])
+            ])
             print('Modified user %s: %s' % (uid, search_helper))
             modified += 1
         except ldap.UNAVAILABLE_CRITICAL_EXTENSION as e:
@@ -117,12 +122,13 @@ def main(server, write_password, password):
     print('Modified %s users' % modified)
     print(problem_uids)
 
+
 if __name__ == "__main__":
 
     server = input("Enter server address: ")
     password = input("Enter password for user '{0}': ".format(
-                         no_limits_user_dn))
+                     no_limits_user_dn))
     write_password = input("Enter password for user '{0}': ".format(
-                               write_access_user_dn))
+                           write_access_user_dn))
 
     main(server, write_password, password)

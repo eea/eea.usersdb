@@ -1,4 +1,5 @@
-#!/usr/bin/python2.7
+''' migrate userclass '''
+# pylint: disable=redefined-outer-name,too-many-locals
 
 import subprocess
 from six.moves import input
@@ -20,6 +21,7 @@ write_access_user_dn = "cn=Eionet Administrator,o=EIONET,l=Europe"
 
 
 def main(server, write_password, password):
+    ''' main method '''
     base_dn = "ou=Users,o=EIONET,l=Europe"
 
     search_cmd = search_users_cmd.format(server=server,

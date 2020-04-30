@@ -1,3 +1,4 @@
+''' installer for eea.usersdb '''
 from os.path import join
 from setuptools import setup, find_packages
 

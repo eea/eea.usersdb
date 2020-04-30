@@ -1,3 +1,9 @@
+"""
+A tuple for holding the results of a call to a mock, either in the form
+`(args, kwargs)` or `(name, args, kwargs)`.
+"""
+
+
 class callargs(tuple):
     """
     A tuple for holding the results of a call to a mock, either in the form
@@ -18,7 +24,7 @@ class callargs(tuple):
             args_kwargs = tuple(self)
             other_args_kwargs = other
 
-        if len(other_args_kwargs) == 0:
+        if not other_args_kwargs:
             other_args, other_kwargs = (), {}
         elif len(other_args_kwargs) == 1:
             if isinstance(other_args_kwargs[0], tuple):
@@ -34,6 +40,7 @@ class callargs(tuple):
 
 
 class Recorder(object):
+    ''' Recorder class '''
     def __init__(self):
         self.call_list = []
 
@@ -47,6 +54,7 @@ class Recorder(object):
         self.call_list.append(call_spec)
 
     def assert_end(self):
+        ''' assert if all expected calls have occured '''
         if self.call_list != []:
             raise AssertionError("Expected calls not realized (%d calls)" %
                                  len(self.call_list))

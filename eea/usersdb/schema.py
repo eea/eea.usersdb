@@ -1,6 +1,7 @@
+''' users db schema '''
+from six.moves import range
 import colander
 import phonenumbers
-from six.moves import range
 
 INVALID_PHONE_MESSAGES = (
     ("Invalid telephone number. It must be written "
@@ -20,11 +21,13 @@ class PhoneNumber(colander.String):
     """PhoneNumber type for colander Node"""
 
     def serialize(self, node, appstruct):
+        ''' serialize '''
         if appstruct is colander.null or not appstruct:
             return colander.null
         return appstruct
 
     def deserialize(self, node, cstruct):
+        ''' deserialize '''
         try:
             number = phonenumbers.parse(cstruct)
         except Exception:
@@ -33,6 +36,7 @@ class PhoneNumber(colander.String):
             return phonenumbers.format_number(number, NUMBER_FORMAT)
 
     def cstruct_children(self, *args):
+        ''' just return an empty list? '''
         return []
 
 
@@ -64,7 +68,6 @@ def _latin_validator(node, value):
         else:
             raise colander.Invalid(node,
                                    INVALID_STRING_ENCODING % node.description)
-            return
 
 
 INVALID_URL = "Invalid URL. It must begin with \"http://\" or \"https://\"."
