@@ -1,9 +1,11 @@
+''' update users org title and native name '''
+# pylint: disable=redefined-outer-name,too-many-locals
 from __future__ import print_function
 import subprocess
+from six.moves import input
 import ldap
 from ldap.ldapobject import LDAPObject
 from ldap.resiter import ResultProcessor
-from six.moves import input
 
 LDAP_TIMEOUT = 10
 
@@ -21,8 +23,9 @@ class StreamingLDAPObject(LDAPObject, ResultProcessor):
 
 
 def connect(server):
+    ''' create server connection '''
     info = server.split(':')
-    if (len(info) == 2):
+    if len(info) == 2:
         if info[1] == '389':
             server = info[0]
     ldap.set_option(ldap.OPT_X_TLS_REQUIRE_CERT, ldap.OPT_X_TLS_NEVER)
@@ -42,6 +45,7 @@ def connect(server):
 
 
 def main(server, write_password, password):
+    ''' main method '''
     conn = connect(server)
     conn.simple_bind(write_access_user_dn, write_password)
     base_dn = "ou=Organisations,o=EIONET,l=Europe"
@@ -71,7 +75,7 @@ def main(server, write_password, password):
         try:
             conn.modify_s(org_dn, [
                 (ldap.MOD_REPLACE, 'physicalDeliveryOfficeName', org_title)
-                ])
+            ])
             print('Modified organisation %s: %s' % (oid, org_title))
             modified += 1
         except ldap.UNAVAILABLE_CRITICAL_EXTENSION as e:
@@ -80,12 +84,13 @@ def main(server, write_password, password):
     print('Modified %s users' % modified)
     print(problem_oids)
 
+
 if __name__ == "__main__":
 
     server = input("Enter server address: ")
     password = input("Enter password for user '{0}': ".format(
-                         no_limits_user_dn))
+                     no_limits_user_dn))
     write_password = input("Enter password for user '{0}': ".format(
-                               write_access_user_dn))
+                           write_access_user_dn))
 
     main(server, write_password, password)

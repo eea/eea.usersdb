@@ -1,3 +1,4 @@
+''' factories module '''
 from eea.usersdb import UsersDB
 from AccessControl.SecurityManagement import getSecurityManager
 
