@@ -147,7 +147,7 @@ ACCEPTED_SEARCH_FIELDS = {
 
 def VALID_PERMITTEDSENDER(x):
     ''' VALID_PERMITTEDSENDER '''
-    return x in ('owners', 'members', 'anyone') or '@'in x
+    return x in ('owners', 'members', 'anyone') or '@' in x
 
 
 class InvalidPermittedSender(Exception):
@@ -2492,10 +2492,10 @@ class UsersDB(object):
                       'name_native': attr.get('physicalDeliveryOfficeName',
                                               [b""])[0].decode(self._encoding),
                       'country':
-                      attr.get('c', ['int']   # needs to be set to int,
+                      attr.get('c', [b"int"]   # needs to be set to int,
                                # otherwise org doesn't
                                # show up
-                               )[0]})
+                               )[0].decode(self._encoding)})
 
                     for dn, attr in result)
 
