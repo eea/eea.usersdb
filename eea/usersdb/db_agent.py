@@ -1877,11 +1877,10 @@ class UsersDB(object):
         """Return all users matching any of the uids"""
         lookup_filters = [ACCEPTED_SEARCH_FIELDS['uid']
                           ['ldap_filter']] * len(uids)
-        query_arguments = [uid.encode(self._encoding) for uid in uids]
 
         pattern = '(&(objectClass=person)(|%s))' % ''.join(lookup_filters)
         query_filter = ldap.filter.filter_format(
-            pattern, tuple(query_arguments))
+            pattern, tuple(uids))
         result = self.conn.search_s(self._user_dn_suffix, ldap.SCOPE_ONELEVEL,
                                     filterstr=query_filter)
 

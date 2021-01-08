@@ -3,6 +3,7 @@ Changelog
 
 2.5-dev0 - (unreleased)
 ---------------------------
+* Bugfix related to encoding in search [dumitval]
 
 2.4 - (2020-12-04)
 ---------------------------
