@@ -994,7 +994,6 @@ class UsersDB(object):
         log.info("Modifying info for user %r", user_id)
 
         for dn, modify_statements in six.iteritems(diff):
-            # import pdb; pdb.set_trace() # no longer needed ?
             result = self.conn.modify_s(dn, tuple(modify_statements))
             assert result[:2] == (ldap.RES_MODIFY, [])
 
@@ -1438,6 +1437,15 @@ class UsersDB(object):
         dn, attr = result[0]
         return [self._user_id(d) for d in attr['uniqueMember'] if
                 d.decode() != '']
+
+    @log_ldap_exceptions
+    def org_country(self, org_id):
+        ''' return two letter ISD country code of organisation '''
+        query_dn = self._org_dn(org_id)
+        result = self.conn.search_s(query_dn, ldap.SCOPE_BASE,
+                                    attrlist=('c',))
+        assert len(result) == 1
+        return result[0][1]['c'][0].decode('utf-8')
 
     @log_ldap_exceptions
     def pending_members_in_org(self, org_id):
