@@ -1,8 +1,8 @@
 ''' users db schema '''
+import re
 from six.moves import range
 import colander
 import phonenumbers
-import re
 
 INVALID_PHONE_MESSAGES = (
     ("Invalid telephone number. It must be written "
@@ -78,6 +78,7 @@ _url_validator = colander.Regex(r'^http[s]?\://', msg=INVALID_URL)
 
 
 def _email_validator(node, value):
+    """ email validator """
     pattern = (r"(?:^|\s)[-a-z-A-Z0-9_.']+@(?:[-a-z-A-Z0-9]+\.)+[a-z-A-Z]"
                r"{2,63}(?:\s|$)")
     if not re.match(pattern, value):
