@@ -1,6 +1,10 @@
 Changelog
 =========
 
+2.6 - (2021-04-08)
+---------------------------
+* add email validation (replacing validate_email package) [dumitval]
+
 2.5 - (2021-01-08)
 ---------------------------
 * Bugfix related to encoding in search [dumitval]

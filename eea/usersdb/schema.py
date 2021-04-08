@@ -1,4 +1,5 @@
 ''' users db schema '''
+import re
 from six.moves import range
 import colander
 import phonenumbers
@@ -10,7 +11,7 @@ INVALID_PHONE_MESSAGES = (
      "country / area code provided. If you second check and believe "
      "the number is correct, please contact HelpDesk.")
 )
-INVALID_EMAIL = "Invalid email format"
+INVALID_EMAIL = "Invalid email format %s"
 
 NUMBER_FORMAT = phonenumbers.PhoneNumberFormat.INTERNATIONAL
 
@@ -74,9 +75,14 @@ INVALID_URL = "Invalid URL. It must begin with \"http://\" or \"https://\"."
 
 # max length for domain name labels is 63 characters per RFC 1034
 _url_validator = colander.Regex(r'^http[s]?\://', msg=INVALID_URL)
-_email_validator = colander.Regex(
-    r"(?:^|\s)[-a-z-A-Z0-9_.']+@(?:[-a-z-A-Z0-9]+\.)+[a-z-A-Z]{2,63}(?:\s|$)",
-    msg=INVALID_EMAIL)
+
+
+def _email_validator(node, value):
+    """ email validator """
+    pattern = (r"(?:^|\s)[-a-z-A-Z0-9_.']+@(?:[-a-z-A-Z0-9]+\.)+[a-z-A-Z]"
+               r"{2,63}(?:\s|$)")
+    if not re.match(pattern, value):
+        raise colander.Invalid(node, INVALID_EMAIL % value)
 
 
 class UserInfoSchema(colander.MappingSchema):
