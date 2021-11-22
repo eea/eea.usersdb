@@ -3,6 +3,8 @@ Changelog
 
 2.7-dev0 - (unreleased)
 ---------------------------
+* allow digits in role_id filtering
+  [valipod]
 
 2.6 - (2021-04-08)
 ---------------------------
