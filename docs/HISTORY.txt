@@ -1,6 +1,9 @@
 Changelog
 =========
 
+2.8-dev0 - (unreleased)
+---------------------------
+
 2.7 - (2021-11-22)
 ---------------------------
 * allow digits in role_id filtering
