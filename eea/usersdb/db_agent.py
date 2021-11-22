@@ -531,7 +531,7 @@ class UsersDB(object):
         pattern = pattern.lower()
 
         for ch in pattern:
-            if ch not in ascii_lowercase + '-*':
+            if ch not in ascii_lowercase + digits + '-*':
                 return set()
 
         if not pattern:

@@ -1,6 +1,11 @@
 Changelog
 =========
 
+2.7 - (2021-11-22)
+---------------------------
+* allow digits in role_id filtering
+  [valipod]
+
 2.6 - (2021-04-08)
 ---------------------------
 * add email validation (replacing validate_email package) [dumitval]

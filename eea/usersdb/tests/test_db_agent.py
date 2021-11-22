@@ -5,9 +5,9 @@
 import unittest
 from copy import deepcopy
 
-from mock import Mock
 import six
 from six.moves import map
+from mock import Mock
 import ldap
 from eea.usersdb import db_agent
 from eea.usersdb.tests.mock_recorder import Recorder
