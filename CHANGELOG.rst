@@ -1,4 +1,7 @@
-1.2.1-ispra (unreleased)
+1.2.2-ispra (unreleased)
+------------------------
+
+1.2.1-ispra (2021-11-23)
 ------------------------
 * add factories module  (agent_from_uf, agent_from_site) [dumitval]
 
