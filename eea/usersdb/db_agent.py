@@ -509,7 +509,7 @@ class UsersDB(object):
 
         except ldap.ALREADY_EXISTS:
             raise NameAlreadyExists("User %r already exists" % new_user_id)
-        assert result == (ldap.RES_ADD, [])
+        assert ldap.RES_ADD in result
 
     @log_ldap_exceptions
     def set_user_password(self, user_id, old_pw, new_pw):
@@ -591,7 +591,7 @@ class UsersDB(object):
         log.info("Modifying info for user %r", user_id)
         for dn, modify_statements in diff.iteritems():
             result = self.conn.modify_s(dn, tuple(modify_statements))
-            assert result == (ldap.RES_MODIFY, [])
+            assert ldap.RES_MODIFY in result
 
     def _org_info_diff(self, org_id, old_info, new_info):
         def pack(value):
@@ -692,7 +692,7 @@ class UsersDB(object):
             attrs.append( (self.org_schema[name], [value.encode('utf-8')]) )
 
         result = self.conn.add_s(self._org_dn(org_id), attrs)
-        assert result == (ldap.RES_ADD, [])
+        assert ldap.RES_ADD in result
 
     @log_ldap_exceptions
     def set_org_info(self, org_id, new_info):
@@ -705,7 +705,7 @@ class UsersDB(object):
             return
         org_dn = self._org_dn(org_id)
         result = self.conn.modify_s(org_dn, changes)
-        assert result == (ldap.RES_MODIFY, [])
+        assert ldap.RES_MODIFY in result
 
     @log_ldap_exceptions
     def members_in_org(self, org_id):
@@ -729,7 +729,7 @@ class UsersDB(object):
             changes += ((ldap.MOD_DELETE, 'uniqueMember', ['']),)
 
         result = self.conn.modify_s(self._org_dn(org_id), changes)
-        assert result == (ldap.RES_MODIFY, [])
+        assert ldap.RES_MODIFY in result
 
     @log_ldap_exceptions
     def remove_from_org(self, org_id, user_id_list):
@@ -745,7 +745,7 @@ class UsersDB(object):
             changes = ((ldap.MOD_ADD, 'uniqueMember', ['']),) + changes
 
         result = self.conn.modify_s(self._org_dn(org_id), changes)
-        assert result == (ldap.RES_MODIFY, [])
+        assert ldap.RES_MODIFY in result
 
     @log_ldap_exceptions
     def rename_org(self, org_id, new_org_id):
@@ -772,7 +772,7 @@ class UsersDB(object):
                     (ldap.MOD_DELETE, 'uniqueMember', [org_dn]),
                     (ldap.MOD_ADD, 'uniqueMember', [new_org_dn]),
                 ))
-                assert mod_result == (ldap.RES_MODIFY, [])
+                assert ldap.RES_MODIFY in mod_result
         except:
             msg = ("Error while updating references to organisation "
                    "from %r to %r" % (org_dn, new_org_dn))
@@ -819,7 +819,7 @@ class UsersDB(object):
             raise ValueError("DN already exists (trying to create %r)"
                              % role_dn)
 
-        assert result == (ldap.RES_ADD, [])
+        assert ldap.RES_ADD in result
 
     @log_ldap_exceptions
     def set_role_description(self, role_id, description):
@@ -936,7 +936,7 @@ class UsersDB(object):
         except ldap.NO_SUCH_ATTRIBUTE:
             pass # so the group was not empty. that's fine.
         else:
-            assert result == (ldap.RES_MODIFY, [])
+            assert ldap.RES_MODIFY in result
             log.info("Removed placeholder uniqueMember from %r", role_dn)
 
     def _add_member_dn_to_role_dn(self, role_dn, member_dn):
@@ -1008,7 +1008,7 @@ class UsersDB(object):
         except ldap.NO_SUCH_ATTRIBUTE:
             pass # so the group didn't have circle placeholder. that's fine.
         else:
-            assert result == (ldap.RES_MODIFY, [])
+            assert ldap.RES_MODIFY in result
             log.info("Removed owner placeholder from %r", role_dn)
 
     @log_ldap_exceptions

@@ -1,5 +1,6 @@
 1.2.2-ispra (unreleased)
 ------------------------
+* update LDAP ADD and MODIFY asserts [dumitval]
 
 1.2.1-ispra (2021-11-23)
 ------------------------
