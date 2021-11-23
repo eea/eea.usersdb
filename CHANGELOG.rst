@@ -1,5 +1,8 @@
-1.2.0-ispra (unreleased)
---------------------
+1.2.1-ispra (unreleased)
+------------------------
+
+1.2.0-ispra (2021-11-23)
+------------------------
 * compatibility with new colander [dumitval]
 * update for creating users in custom RDN setup [simiamih]
 
