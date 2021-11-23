@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='eea.usersdb',
-    version='1.2.2-ispra',
+    version='1.2.3-ispra',
     author='Eau de Web',
     author_email='office@eaudeweb.ro',
     packages=find_packages(),
